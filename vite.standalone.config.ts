@@ -27,7 +27,7 @@ export default defineConfig({
     emptyOutDir: false, // keep checkout artifacts when building both
     sourcemap: true,
     target: 'esnext',
-    minify: false,
+    minify: true,
     outDir: 'dist',
   },
   server: {
