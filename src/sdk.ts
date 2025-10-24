@@ -282,6 +282,7 @@ const getProducts = async (ids: number[] | undefined) => {
 
   const result = await productsResponse.json();
 
+  // map the products to the expected format
   const products = result.data.site.products.edges.map((edge: any) => ({
     entityId: edge.node.entityId,
     customFields: edge.node.customFields.edges.map((fieldEdge: any) => fieldEdge.node),
