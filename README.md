@@ -66,3 +66,10 @@ yalc add bigc-masterffl-checkout-sdk
 yalc push
 ```
 
+
+---
+
+### Contributing
+
+See the contribution guidelines in [CONTRIBUTING.md](./CONTRIBUTING.md) for commit conventions and release process.
+

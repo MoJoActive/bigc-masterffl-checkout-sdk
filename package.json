@@ -1,6 +1,6 @@
 {
   "name": "bigc-masterffl-checkout-sdk",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "BigCommerce MasterFFL Checkout SDK - A React component library for BigCommerce FFL dealer selection",
   "type": "module",
   "exports": {
@@ -34,7 +34,8 @@
     "watch": "nodemon --watch src --ext ts,tsx --exec 'npm run build && npx yalc push'",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "npm run build",
+    "release": "semantic-release"
   },
   "peerDependencies": {
     "@bigcommerce/checkout-sdk": "^1.238.0",
@@ -58,7 +59,14 @@
     "tailwindcss": "^3.4.18",
     "typescript": "^5.6.3",
     "vite": "^5.4.10",
-    "yalc": "^1.0.0-pre.53"
+    "yalc": "^1.0.0-pre.53",
+    "semantic-release": "^24.0.0",
+    "@semantic-release/changelog": "^6.0.3",
+    "@semantic-release/commit-analyzer": "^13.0.0",
+    "@semantic-release/release-notes-generator": "^14.0.1",
+    "@semantic-release/git": "^10.0.1",
+    "@semantic-release/github": "^10.3.5",
+    "@semantic-release/npm": "^12.0.0"
   },
   "dependencies": {
     "@tailwindcss/postcss": "^4.1.14"
