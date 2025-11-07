@@ -1,3 +1,8 @@
+## <small>1.0.3 (2025-11-07)</small>
+
+* fix: force version bump ([03d38ba](https://github.com/MoJoActive/bigc-masterffl-checkout-sdk/commit/03d38ba))
+* chore: fixing dist output ([5748a64](https://github.com/MoJoActive/bigc-masterffl-checkout-sdk/commit/5748a64))
+
 ## <small>1.0.2 (2025-11-07)</small>
 
 * chore: adding dist to gitignore since the github action will take care of that now ([cc9d643](https://github.com/MoJoActive/bigc-masterffl-checkout-sdk/commit/cc9d643))
