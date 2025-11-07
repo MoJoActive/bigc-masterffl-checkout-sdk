@@ -8,8 +8,7 @@
 # testing
 /coverage
 
-# production builds (regenerate with npm run build)
-!/dist
+dist/
 
 # misc
 .DS_Store
