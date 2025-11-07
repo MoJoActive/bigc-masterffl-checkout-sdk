@@ -1,3 +1,4 @@
+import type { CheckoutService } from "@bigcommerce/checkout-sdk";
 export declare const SDK: {
     init: () => Promise<{
         isFFL: boolean;
@@ -56,5 +57,6 @@ export declare const SDK: {
     }>;
     getMappingData: () => Promise<any>;
     getProducts: (ids: number[] | undefined) => Promise<any>;
+    checkoutService: CheckoutService | null;
 };
 //# sourceMappingURL=sdk.d.ts.map
