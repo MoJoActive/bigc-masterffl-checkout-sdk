@@ -1,3 +1,8 @@
+## <small>1.0.2 (2025-11-07)</small>
+
+* chore: adding dist to gitignore since the github action will take care of that now ([cc9d643](https://github.com/MoJoActive/bigc-masterffl-checkout-sdk/commit/cc9d643))
+* fix: cleaning up previously selected dealer info when cart no longer contains an FFL item ([005b19b](https://github.com/MoJoActive/bigc-masterffl-checkout-sdk/commit/005b19b))
+
 ## <small>1.0.1 (2025-10-24)</small>
 
 * fix: updating a comment to test version bump ([819c4ab](https://github.com/MoJoActive/bigc-masterffl-checkout-sdk/commit/819c4ab))
