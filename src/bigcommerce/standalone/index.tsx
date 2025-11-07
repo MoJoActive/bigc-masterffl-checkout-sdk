@@ -80,8 +80,33 @@ const MasterFFLProvider = ({ children }: { children: React.ReactNode }) => {
     if (selectedDealer && selectedDealer !== "null") setSelectedDealer(JSON.parse(selectedDealer));
 
     const { isFFL, isSuppressor } = await SDK.init();
+
     setIsFFL(isFFL);
     setIsSuppressor(isSuppressor);
+
+    if (!isFFL && !isSuppressor) {
+      handleCleanup();
+    }
+  };
+
+  const handleCleanup = () => {
+    const checkoutId = SDK.getConfig().checkoutId;
+    const previousDealer = sessionStorage.getItem(`${checkoutId}-selectedDealer`);
+    if (previousDealer) {
+      SDK.removeSession(checkoutId, "postalCode");
+      SDK.removeSession(checkoutId, "acceptTerms");
+      SDK.removeSession(checkoutId, "selectedDealer");
+
+      // clear the address fields
+      const addressFields = document.querySelectorAll('[name^="shippingAddress."]');
+      addressFields.forEach((input) => {
+        // Check the type of each Element before casting and using setFormControlValue
+        if (input instanceof HTMLInputElement || input instanceof HTMLTextAreaElement || input instanceof HTMLSelectElement) {
+          const nextValue = String("");
+          setFormControlValue(input, nextValue);
+        }
+      });
+    }
   };
 
   useEffect(() => {
@@ -233,7 +258,7 @@ const MasterFFLModal = () => {
 };
 
 const MasterFFLForm = () => {
-  const { values, setValues, selectedDealer, error, setIsModalOpen } = useMasterFFL();
+  const { values, setValues, selectedDealer, error, setIsModalOpen, isFFL, isSuppressor } = useMasterFFL();
   const [errors, setErrors] = useState({ postalCode: "", acceptTerms: "" });
 
   const observerRef = useRef<MutationObserver | null>(null);
@@ -349,6 +374,10 @@ const MasterFFLForm = () => {
       handleSubmit(e);
     }
   };
+
+  if (!isFFL && !isSuppressor) {
+    return null;
+  }
 
   return (
     <div

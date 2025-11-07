@@ -1,3 +1,4 @@
+import type { CheckoutService } from "@bigcommerce/checkout-sdk";
 import { CONFIG_APP_URL, CONFIG_BASE_URL, CONFIG_SDK_URL, DEFAULT_LANGUAGE } from "./config";
 import type { MasterFFLBaseConfig, MasterFFLContextType } from "./types";
 
@@ -28,10 +29,7 @@ const init = async () => {
   });
 
   if (isFFL || isSuppressor) {
-    return {
-      isFFL,
-      isSuppressor,
-    };
+    return { isFFL, isSuppressor };
   }
 
   // Detect FFL and Suppressor from Category Mapping
@@ -65,10 +63,7 @@ const init = async () => {
     );
   }
 
-  return {
-    isFFL,
-    isSuppressor,
-  };
+  return { isFFL, isSuppressor };
 };
 
 const getConfig = () => {
@@ -169,7 +164,7 @@ const saveDealer = async (checkoutId: string | undefined, dealer: any, isCustomC
   }
 
   // assign the items to the ffl dealer address in custom checkout
-  // in the script manager we don't have access to reload the checkout-sdk, so we manually 
+  // in the script manager we don't have access to reload the checkout-sdk, so we manually
   // assign the shipping address fields which triggers a new consignment for us.
   //
   // custom checkout has access to reload the checkout-sdk which will bring in
@@ -295,7 +290,12 @@ const getProducts = async (ids: number[] | undefined) => {
 const getSession = (checkoutId: string | undefined) => {
   return {
     postalCode: sessionStorage.getItem(`${checkoutId}-postalCode`),
-    acceptTerms: sessionStorage.getItem(`${checkoutId}-acceptTerms`) === "true" ? true : sessionStorage.getItem(`${checkoutId}-acceptTerms`) === "false" ? false : undefined,
+    acceptTerms:
+      sessionStorage.getItem(`${checkoutId}-acceptTerms`) === "true"
+        ? true
+        : sessionStorage.getItem(`${checkoutId}-acceptTerms`) === "false"
+        ? false
+        : undefined,
     selectedDealer: sessionStorage.getItem(`${checkoutId}-selectedDealer`),
   };
 };
@@ -320,4 +320,5 @@ export const SDK = {
   saveDealer,
   getMappingData,
   getProducts,
+  checkoutService: null as CheckoutService | null,
 };
