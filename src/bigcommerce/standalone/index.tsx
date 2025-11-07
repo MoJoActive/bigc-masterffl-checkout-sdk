@@ -29,7 +29,7 @@ function setFormControlValue(element: HTMLInputElement | HTMLTextAreaElement | H
     valueSetter ? valueSetter.call(select, value) : (select.value = value);
   }
 
-  // Fire events so any React/Vue listeners update state
+  // Fire events so any React listeners update state
   element.dispatchEvent(new Event("input", { bubbles: true }));
   element.dispatchEvent(new Event("change", { bubbles: true }));
 }
