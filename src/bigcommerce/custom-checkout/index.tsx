@@ -252,12 +252,36 @@ const MasterFFLForm = () => {
 
     buttonRef.current = button;
 
-    const isDisabled = !acceptTermsRef.current || !selectedDealerRef.current;
+    // 1. if the user has not accepted the terms
+    // 2. if the user has not selected a dealer
+    let isDisabled = !acceptTermsRef.current || !selectedDealerRef.current;
+
+    // Only check consignment-related conditions when multi-shipping is enabled
+    if (config.hasMultiShippingEnabled) {
+      // find the consignment alert message (shows when there's unconsigned items)
+      const hasConsignmentAlert = document.querySelector('.checkout-step--shipping .alertBox--info') as HTMLDivElement | null;
+
+      // find the number of consignment containers
+      const consignmentCounts = document.querySelectorAll('.consignment-container').length;
+      
+      // find the number of consignment shipping options that are checked
+      const consignmentShippingOptionsChecked = document.querySelectorAll('.consignment-container input[type="radio"]:checked').length === consignmentCounts;
+
+      // 3. if the user has a consignment alert
+      // 4. if the user has not checked all the consignment shipping options
+      isDisabled = isDisabled || !!hasConsignmentAlert || !consignmentShippingOptionsChecked;
+    }
+
+    // if the logic is valid, but the button is disabled, keep it disabled
+    if (!isDisabled && button.disabled) {
+      button.disabled = true;
+      return;
+    }
 
     if (button.disabled !== isDisabled) {
       button.disabled = isDisabled;
     }
-  }, []);
+  }, [config.hasMultiShippingEnabled]);
 
   useEffect(() => {
     const parent = document.getElementById("checkout-shipping-continue")?.parentElement;
@@ -417,7 +441,6 @@ const MasterFFLForm = () => {
           
           if (containerId && containerId === String(fflConsignmentId)) {
             container.classList.add("consignment-container--ffl");
-            console.log(`Marked consignment container at index ${i} as FFL (matched by consignment ID)`);
             isMarkingConsignmentRef.current = false;
             return;
           }
@@ -440,7 +463,6 @@ const MasterFFLForm = () => {
           // Require at least postal code and one other match
           if (postalCodeMatch && (streetMatch || (cityMatch && stateMatch))) {
             container.classList.add("consignment-container--ffl");
-            console.log(`Marked consignment container at index ${i} as FFL (matched by address)`);
             isMarkingConsignmentRef.current = false;
             return;
           }
@@ -451,7 +473,6 @@ const MasterFFLForm = () => {
       const fflIndex = await SDK.getFFLConsignmentIndex();
       if (fflIndex !== null && fflIndex >= 0 && fflIndex < containers.length) {
         containers[fflIndex].classList.add("consignment-container--ffl");
-        console.log(`Marked consignment container at index ${fflIndex} as FFL (fallback to API index)`);
       } else {
         console.warn("Could not match FFL consignment to DOM container");
       }

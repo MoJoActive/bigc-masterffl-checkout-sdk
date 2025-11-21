@@ -11,8 +11,6 @@ const init = async () => {
   let isFFL = false;
   let isSuppressor = false;
 
-  console.log(checkoutSettings);
-
   window.masterFFLConfig = window.masterFFLConfig || ({} as MasterFFLBaseConfig);
   window.masterFFLConfig.hasMultiShippingEnabled = checkoutSettings.storeConfig.checkoutSettings.hasMultiShippingEnabled;
 
