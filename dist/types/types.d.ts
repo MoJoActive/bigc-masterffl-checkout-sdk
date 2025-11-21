@@ -4,6 +4,8 @@ export interface MasterFFLBaseConfig {
     storefrontApiToken: string;
     storeHash: string | undefined;
     checkoutId: string | undefined;
+    nonFFLItemStrategy: "FORCE_TO_FFL" | "FORCE_TO_NON_FFL" | "ALLOW_CHOICE";
+    hasMultiShippingEnabled: boolean;
     lang: {
         heading?: string;
         subheading?: string;
@@ -73,6 +75,7 @@ export interface MasterFFLContextType {
     config: MasterFFLConfig;
     handleSaveDealer: (dealer: any) => Promise<void>;
     selectedDealer: any;
+    setSelectedDealer: (selectedDealer: any) => void;
     error: string | null;
     isFFL: boolean;
     isSuppressor: boolean;

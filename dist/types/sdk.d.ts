@@ -21,6 +21,8 @@ export declare const SDK: {
         };
         storeHash: string | undefined;
         checkoutId: string | undefined;
+        nonFFLItemStrategy: "FORCE_TO_FFL" | "FORCE_TO_NON_FFL" | "ALLOW_CHOICE";
+        hasMultiShippingEnabled: boolean;
     };
     getSession: (checkoutId: string | undefined) => {
         postalCode: string | null;
@@ -33,7 +35,7 @@ export declare const SDK: {
         selectedDealer: string;
     }) => void;
     removeSession: (checkoutId: string | undefined, key: string) => void;
-    saveDealer: (checkoutId: string | undefined, dealer: any, isCustomCheckout?: boolean) => Promise<{
+    saveDealer: (checkoutId: string | undefined, dealer: any) => Promise<{
         dealer: any;
         shippingData: {
             address: {
@@ -57,6 +59,9 @@ export declare const SDK: {
     }>;
     getMappingData: () => Promise<any>;
     getProducts: (ids: number[] | undefined) => Promise<any>;
+    getFFLConsignmentIndex: () => Promise<number | null>;
+    fflProducts: Map<number, boolean>;
+    fflLineItems: Map<number, any>;
     checkoutService: CheckoutService | null;
 };
 //# sourceMappingURL=sdk.d.ts.map

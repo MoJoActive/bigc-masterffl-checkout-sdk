@@ -3,7 +3,7 @@ import { createPortal } from "react-dom";
 import { createRoot } from "react-dom/client";
 import { SDK } from "../../sdk";
 
-const DESTINATION_ELEMENT = "#checkoutShippingAddress";
+const DESTINATION_ELEMENT = ".shipping-header";
 
 // Ensures React-based forms in the host page detect programmatic updates
 function setFormControlValue(element: HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement, value: string) {
@@ -264,9 +264,12 @@ const MasterFFLForm = () => {
   const observerRef = useRef<MutationObserver | null>(null);
   const buttonRef = useRef<HTMLButtonElement | null>(null);
   const billingObserverRef = useRef<MutationObserver | null>(null);
+  const consignmentObserverRef = useRef<MutationObserver | null>(null);
+  const mutationTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const acceptTermsRef = useRef(false);
   const selectedDealerRef = useRef(false);
+  const isMarkingConsignmentRef = useRef(false);
 
   useEffect(() => {
     acceptTermsRef.current = values.acceptTerms;
@@ -343,6 +346,253 @@ const MasterFFLForm = () => {
   useEffect(() => {
     applyDisabledState();
   }, [applyDisabledState, values.acceptTerms, selectedDealer]);
+
+  const markFFLConsignment = useCallback(async () => {
+    // Prevent re-entrant calls
+    if (isMarkingConsignmentRef.current) return;
+    isMarkingConsignmentRef.current = true;
+
+    try {
+      // Find all consignment containers first
+      const containers = document.querySelectorAll(".consignment-container");
+
+      if (containers.length === 0) {
+        isMarkingConsignmentRef.current = false;
+        return;
+      }
+
+      // Get the FFL consignment data from the API to match against DOM
+      const checkoutId = SDK.getConfig().checkoutId;
+      if (!checkoutId) {
+        isMarkingConsignmentRef.current = false;
+        return;
+      }
+
+      // Get checkout with consignments to find the FFL one
+      const response = await fetch(`/api/storefront/checkouts/${checkoutId}?include=consignments.lineItems.physicalItems%2Cconsignments.address`, {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+      });
+
+      if (!response.ok) {
+        isMarkingConsignmentRef.current = false;
+        return;
+      }
+
+      const checkout = await response.json();
+      const consignments = checkout?.consignments || checkout?.data?.consignments || [];
+
+      // Find the FFL consignment from API data
+      let fflConsignment = null;
+      let fflConsignmentId = null;
+
+      // Match by selected dealer address if available (most reliable)
+      if (selectedDealer) {
+        const dealerZip = selectedDealer?.contact?.address?.zip;
+        const dealerStreet1 = selectedDealer?.contact?.address?.street1;
+        const dealerCity = selectedDealer?.contact?.address?.city;
+        const dealerState = selectedDealer?.contact?.address?.state;
+
+        for (const consignment of consignments) {
+          const address = consignment?.address;
+          if (address) {
+            // Match by postal code and street address
+            const zipMatch = address.postalCode === dealerZip;
+            const streetMatch = address.address1 === dealerStreet1;
+            const cityMatch = address.city === dealerCity;
+            const stateMatch = address.stateOrProvinceCode === dealerState;
+
+            // If we have multiple matches, it's likely the FFL consignment
+            if ((zipMatch && streetMatch) || (zipMatch && cityMatch && stateMatch)) {
+              fflConsignment = consignment;
+              fflConsignmentId = consignment.id;
+              break;
+            }
+          }
+        }
+      }
+
+      // If we still don't have a match, try matching by product IDs (check if consignment has FFL products)
+      if (!fflConsignment) {
+        // Get the mapping to check FFL attributes
+        const mapping = await SDK.getMappingData();
+        const ffAttr = mapping?.ffl_custom_attribute_name?.trim().toLowerCase();
+        const ffValue = mapping?.ffl_custom_attribute_value?.trim().toLowerCase();
+        const fflFirearmAttr = mapping?.ffl_firearm_custom_attribute_name?.trim().toLowerCase();
+        const fflFirearmValue = mapping?.ffl_firearm_custom_attribute_value;
+
+        for (const consignment of consignments) {
+          const lineItems = consignment?.lineItems?.physicalItems || [];
+          if (lineItems.length === 0) continue;
+
+          // Get product IDs from this consignment
+          const consignmentProductIds = lineItems.map((item: any) => item.productEntityId || item.productId);
+          const consignmentProducts = await SDK.getProducts(consignmentProductIds);
+
+          // Check if any product in this consignment is an FFL product
+          const hasFFLItems = consignmentProducts.some((product: any) => {
+            const isFFL = product.customFields?.some(
+              (field: any) => field.name.trim().toLowerCase() === ffAttr && field.value.trim().toLowerCase() === ffValue
+            );
+            const isSuppressor = product.customFields?.some(
+              (field: any) =>
+                field.name.trim().toLowerCase() === fflFirearmAttr && field.value.trim().toLowerCase() === fflFirearmValue?.[3]?.toLowerCase()
+            );
+            return isFFL || isSuppressor;
+          });
+
+          if (hasFFLItems) {
+            fflConsignment = consignment;
+            fflConsignmentId = consignment.id;
+            break;
+          }
+        }
+      }
+
+      if (!fflConsignment) {
+        console.warn("Could not find FFL consignment in API data");
+        isMarkingConsignmentRef.current = false;
+        return;
+      }
+
+      // Remove the class from all containers first
+      containers.forEach((container) => {
+        container.classList.remove("consignment-container--ffl");
+      });
+
+      // Try to find the matching DOM container
+      // Method 1: Check for consignment ID in data attributes
+      if (fflConsignmentId) {
+        for (let i = 0; i < containers.length; i++) {
+          const container = containers[i];
+          // Check if container has data-consignment-id or similar attribute
+          const containerId =
+            container.getAttribute("data-consignment-id") ||
+            container.getAttribute("data-id") ||
+            container.querySelector("[data-consignment-id]")?.getAttribute("data-consignment-id");
+
+          if (containerId && containerId === String(fflConsignmentId)) {
+            container.classList.add("consignment-container--ffl");
+            console.log(`Marked consignment container at index ${i} as FFL (matched by consignment ID)`);
+            isMarkingConsignmentRef.current = false;
+            return;
+          }
+        }
+      }
+
+      // Method 2: Match by address text content
+      const fflAddress = fflConsignment.address;
+      if (fflAddress) {
+        for (let i = 0; i < containers.length; i++) {
+          const container = containers[i];
+          const addressText = container.textContent || "";
+
+          // Match by postal code and street address
+          const postalCodeMatch = fflAddress.postalCode && addressText.includes(fflAddress.postalCode);
+          const streetMatch = fflAddress.address1 && addressText.includes(fflAddress.address1);
+          const cityMatch = fflAddress.city && addressText.includes(fflAddress.city);
+          const stateMatch = fflAddress.stateOrProvinceCode && addressText.includes(fflAddress.stateOrProvinceCode);
+
+          // Require at least postal code and one other match
+          if (postalCodeMatch && (streetMatch || (cityMatch && stateMatch))) {
+            container.classList.add("consignment-container--ffl");
+            console.log(`Marked consignment container at index ${i} as FFL (matched by address)`);
+            isMarkingConsignmentRef.current = false;
+            return;
+          }
+        }
+      }
+
+      // Method 3: Fallback to API index (last resort)
+      const fflIndex = await SDK.getFFLConsignmentIndex();
+      if (fflIndex !== null && fflIndex >= 0 && fflIndex < containers.length) {
+        containers[fflIndex].classList.add("consignment-container--ffl");
+        console.log(`Marked consignment container at index ${fflIndex} as FFL (fallback to API index)`);
+      } else {
+        console.warn("Could not match FFL consignment to DOM container");
+      }
+    } finally {
+      isMarkingConsignmentRef.current = false;
+    }
+  }, [selectedDealer]);
+
+  useEffect(() => {
+    if (!isFFL && !isSuppressor) return;
+
+    // if split consignments is enabled, click the button to switch to multiple shipping modes
+    if (SDK.getConfig().hasMultiShippingEnabled) {
+      if (SDK.getConfig().nonFFLItemStrategy !== "FORCE_TO_FFL") {
+        const btnShipMode = document.querySelector('[data-test="shipping-mode-toggle"]') as HTMLButtonElement;
+        if (btnShipMode && btnShipMode.innerText.trim().toLowerCase() === "ship to multiple addresses") {
+          btnShipMode.click();
+        }
+
+        setTimeout(() => {
+          const btnShipMode = document.querySelector('[data-test="shipping-mode-toggle"]') as HTMLButtonElement;
+          if (btnShipMode && btnShipMode.innerText.trim().toLowerCase() === "ship to a single address") {
+            btnShipMode.style.display = "none";
+          }
+        }, 0);
+      } else {
+        const btnShipMode = document.querySelector('[data-test="shipping-mode-toggle"]') as HTMLButtonElement;
+        if (btnShipMode && btnShipMode.innerText.trim().toLowerCase() === "ship to multiple addresses") {
+          btnShipMode.style.display = "none";
+        }
+      }
+    }
+
+    // Initial check with a small delay to ensure DOM is ready
+    const timeoutId = setTimeout(() => {
+      markFFLConsignment();
+    }, 100);
+
+    // Watch for consignment containers appearing
+    const handleMutations = () => {
+      // Debounce the mutation handler to prevent excessive calls
+      if (isMarkingConsignmentRef.current) return;
+      if (mutationTimeoutRef.current) clearTimeout(mutationTimeoutRef.current);
+      mutationTimeoutRef.current = setTimeout(() => {
+        markFFLConsignment();
+        mutationTimeoutRef.current = null;
+      }, 300);
+    };
+
+    consignmentObserverRef.current = new MutationObserver(handleMutations);
+    consignmentObserverRef.current.observe(document.body, {
+      childList: true,
+      subtree: true,
+    });
+
+    return () => {
+      clearTimeout(timeoutId);
+      if (mutationTimeoutRef.current) {
+        clearTimeout(mutationTimeoutRef.current);
+        mutationTimeoutRef.current = null;
+      }
+      if (consignmentObserverRef.current) {
+        consignmentObserverRef.current.disconnect();
+        consignmentObserverRef.current = null;
+      }
+    };
+  }, [isFFL, isSuppressor, SDK.getConfig().hasMultiShippingEnabled, markFFLConsignment]);
+
+  // Reset and re-mark FFL consignment when dealer changes
+  useEffect(() => {
+    if (!selectedDealer) return;
+
+    // Clear any existing FFL marks
+    const containers = document.querySelectorAll(".consignment-container--ffl");
+    containers.forEach((container) => {
+      container.classList.remove("consignment-container--ffl");
+    });
+
+    // Delay to ensure checkout has reloaded after saveDealer
+    const timeoutId = setTimeout(() => {
+      markFFLConsignment();
+    }, 500);
+
+    return () => clearTimeout(timeoutId);
+  }, [selectedDealer, markFFLConsignment]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setErrors({ postalCode: "", acceptTerms: "" });
@@ -489,6 +739,29 @@ const MasterFFLForm = () => {
         dangerouslySetInnerHTML={{
           __html: `
             #checkoutShippingAddress, #sameAsBilling, #sameAsBilling + label { display: none; }
+            .consignment-container--ffl [data-test="edit-shipping-address"] { display: none; }
+            .consignment-container--ffl [data-test="delete-consignment-button"] { display: none; }
+            ${SDK.getConfig().hasMultiShippingEnabled && `           
+              ${
+                // if the user can choose which consignment to put the items on, hide the remove buttons for the ffl line items
+                // they cannot move these items to a non-ffl address
+                SDK.getConfig().nonFFLItemStrategy === "ALLOW_CHOICE" && [...SDK.fflLineItems].length > 0
+                  ? [...SDK.fflLineItems].map((item) => `[data-test="remove-${item[0]}-button"] { display: none; }`).join("\n")
+                  : ""
+              }
+              ${
+                // hide the reallocate items button if the user cannot choose which consignment to put the items on
+                SDK.getConfig().nonFFLItemStrategy !== "ALLOW_CHOICE"
+                  ? '.consignment-container--ffl [data-test="reallocate-items-button"] { display: none; }'
+                  : ""
+              }
+              ${
+                // hide the enter shipping address button if the user has not selected a dealer
+                !SDK.getSession(SDK.getConfig().checkoutId).selectedDealer &&
+                '.consignment-container [data-test="enter-shipping-address"] { display: none; }'
+              }`
+            }
+            
             `,
         }}
       />
@@ -525,11 +798,11 @@ export const renderMasterFFL = () => {
     if (!app) {
       app = document.createElement("div");
       app.id = "bigc-masterffl-checkout";
-      destination.insertAdjacentElement("beforebegin", app);
+      destination.insertAdjacentElement("afterend", app);
     }
-    // Ensure container is positioned immediately before the destination element
-    if (app.nextElementSibling !== destination) {
-      destination.insertAdjacentElement("beforebegin", app);
+    // Ensure container is positioned immediately after the destination element
+    if (app.previousElementSibling !== destination) {
+      destination.insertAdjacentElement("afterend", app);
     }
 
     // Avoid remounting if already mounted

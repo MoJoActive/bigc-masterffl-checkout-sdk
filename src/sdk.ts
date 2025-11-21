@@ -2,11 +2,19 @@ import type { CheckoutService } from "@bigcommerce/checkout-sdk";
 import { CONFIG_APP_URL, CONFIG_BASE_URL, CONFIG_SDK_URL, DEFAULT_LANGUAGE } from "./config";
 import type { MasterFFLBaseConfig, MasterFFLContextType } from "./types";
 
+const fflProducts = new Map<number, boolean>();
+const fflLineItems = new Map<number, any>();
+
 const init = async () => {
   // get the mapping and cart
-  const [mapping, cart] = await Promise.all([getMappingData(), getCart()]);
+  const [mapping, cart, checkoutSettings] = await Promise.all([getMappingData(), getCart(), getCheckoutSettings()]);
   let isFFL = false;
   let isSuppressor = false;
+
+  console.log(checkoutSettings);
+
+  window.masterFFLConfig = window.masterFFLConfig || ({} as MasterFFLBaseConfig);
+  window.masterFFLConfig.hasMultiShippingEnabled = checkoutSettings.storeConfig.checkoutSettings.hasMultiShippingEnabled;
 
   // get the custom fields
   const ffAttr = mapping?.ffl_custom_attribute_name.trim().toLowerCase();
@@ -26,6 +34,26 @@ const init = async () => {
     return product.customFields.some(
       (field: any) => field.name.trim().toLowerCase() === fflFirearmAttr && field.value.trim().toLowerCase() === fflFirearmValue?.[3]?.toLowerCase()
     );
+  });
+
+  // save the product to the maps
+  products.forEach((product: any) => {
+    if (product.customFields.some((field: any) => field.name.trim().toLowerCase() === ffAttr && field.value.trim().toLowerCase() === ffValue)) {
+      fflProducts.set(product.entityId, product);
+    }
+    if (
+      product.customFields.some(
+        (field: any) => field.name.trim().toLowerCase() === fflFirearmAttr && field.value.trim().toLowerCase() === fflFirearmValue?.[3]?.toLowerCase()
+      )
+    ) {
+      fflProducts.set(product.entityId, true);
+    }
+  });
+
+  cart?.lineItems.physicalItems.forEach((item: any) => {
+    if (fflProducts.get(item.productEntityId)) {
+      fflLineItems.set(item.entityId, item);
+    }
   });
 
   if (isFFL || isSuppressor) {
@@ -114,16 +142,51 @@ const getMappingData = async () => {
   return mapping;
 };
 
-const saveDealer = async (checkoutId: string | undefined, dealer: any, isCustomCheckout: boolean = false) => {
+const getCheckoutSettings = async () => {
+  // return cached cart if it exists
+  const cacheKey = `checkout-settings-${getConfig().storefrontApiToken}`;
+  window.masterFFLCache = window.masterFFLCache || {};
+  const cachedCart = window.masterFFLCache[cacheKey];
+  if (cachedCart) {
+    return cachedCart;
+  }
+
+  const response = await fetch(`/api/storefront/checkout-settings?checkoutId=${getConfig().checkoutId}`, {
+    method: "GET",
+    headers: { "Content-Type": "application/json", "x-api-internal": "This API endpoint is for internal use only and may change in the future" },
+  });
+  const data = await response.json();
+  const checkoutSettings = data as any;
+
+  // cache the checkout settings
+  window.masterFFLCache[cacheKey] = checkoutSettings;
+
+  return checkoutSettings;
+};
+
+const saveDealer = async (checkoutId: string | undefined, dealer: any) => {
   // remove the selected dealer from the session storage
   removeSession(checkoutId, "selectedDealer");
 
   // get the line items
   const cart = await getCart();
-  const lineItems = cart?.lineItems.physicalItems.map((item: any) => ({
+  let lineItems = cart?.lineItems.physicalItems.map((item: any) => ({
     itemId: item.entityId,
+    productId: item.productEntityId,
     quantity: item.quantity,
   }));
+
+  const hasMultiShippingEnabled = getConfig().hasMultiShippingEnabled;
+  const nonFFLItemStrategy = getConfig().nonFFLItemStrategy;
+
+  if (hasMultiShippingEnabled) {
+    if (nonFFLItemStrategy === "FORCE_TO_FFL") {
+      // force all items to the ffl dealer
+    } else if (nonFFLItemStrategy === "FORCE_TO_NON_FFL" || nonFFLItemStrategy === "ALLOW_CHOICE") {
+      // only allow ffl items to be on the first consignment, the rest will be consigned to a user-entered address
+      lineItems = lineItems.filter((item: any) => fflProducts.get(Number(item.productId)));
+    }
+  }
 
   // create the shipping data
   const shippingData = {
@@ -169,17 +232,20 @@ const saveDealer = async (checkoutId: string | undefined, dealer: any, isCustomC
   //
   // custom checkout has access to reload the checkout-sdk which will bring in
   // the new consignments with the ffl dealer address assigned to it
-  if (isCustomCheckout) {
-    await fetch(
-      `/api/storefront/checkouts/${
-        getConfig().checkoutId
-      }/consignments?include=consignments.availableShippingOptions%2Ccart.lineItems.physicalItems.options%2Ccart.lineItems.digitalItems.options%2Ccustomer%2Cpromotions.banners`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify([{ address: shippingData.address, lineItems: shippingData.lineItems }]),
-      }
-    );
+  // if (isCustomCheckout) {
+  await fetch(
+    `/api/storefront/checkouts/${
+      getConfig().checkoutId
+    }/consignments?include=consignments.availableShippingOptions%2Ccart.lineItems.physicalItems.options%2Ccart.lineItems.digitalItems.options%2Ccustomer%2Cpromotions.banners`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify([{ address: shippingData.address, lineItems: shippingData.lineItems }]),
+    }
+  );
+
+  if (getConfig().hasMultiShippingEnabled) {
+    window.location.reload();
   }
 
   // save the selected dealer to session storage
@@ -311,6 +377,85 @@ const removeSession = (checkoutId: string | undefined, key: string) => {
   sessionStorage.removeItem(`${checkoutId}-${key}`);
 };
 
+const getFFLConsignmentIndex = async (): Promise<number | null> => {
+  try {
+    const checkoutId = getConfig().checkoutId;
+    if (!checkoutId) return null;
+
+    // Get checkout with consignments
+    const response = await fetch(`/api/storefront/checkouts/${checkoutId}?include=consignments.lineItems.physicalItems%2Cconsignments.address`, {
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
+    });
+
+    if (!response.ok) {
+      // Fallback: if we have a selected dealer and split consignments is enabled,
+      // the FFL consignment is typically the first one (index 0)
+      if (getConfig().hasMultiShippingEnabled) {
+        const selectedDealer = getSession(checkoutId).selectedDealer;
+        if (selectedDealer && selectedDealer !== "null") {
+          return 0;
+        }
+      }
+      return null;
+    }
+
+    const checkout = await response.json();
+    // Handle different response structures (checkout.consignments or checkout.data.consignments)
+    const consignments = checkout?.consignments || checkout?.data?.consignments || [];
+
+    if (consignments.length === 0) {
+      // Fallback: if we have a selected dealer and split consignments is enabled,
+      // the FFL consignment is typically the first one (index 0)
+      if (getConfig().hasMultiShippingEnabled) {
+        const selectedDealer = getSession(checkoutId).selectedDealer;
+        if (selectedDealer && selectedDealer !== "null") {
+          return 0;
+        }
+      }
+      return null;
+    }
+
+    // Find the consignment that contains FFL items
+    for (let i = 0; i < consignments.length; i++) {
+      const consignment = consignments[i];
+      const lineItems = consignment?.lineItems?.physicalItems || [];
+
+      // Check if any line item in this consignment is an FFL product
+      const hasFFLItems = lineItems.some((item: any) => {
+        const productId = item.productEntityId || item.productId;
+        return fflProducts.get(Number(productId));
+      });
+
+      if (hasFFLItems) {
+        return i;
+      }
+    }
+
+    // Fallback: if we have a selected dealer and split consignments is enabled,
+    // the FFL consignment is typically the first one (index 0)
+    if (getConfig().hasMultiShippingEnabled) {
+      const selectedDealer = getSession(checkoutId).selectedDealer;
+      if (selectedDealer && selectedDealer !== "null") {
+        return 0;
+      }
+    }
+
+    return null;
+  } catch (error) {
+    console.error("Error getting FFL consignment index:", error);
+    // Fallback on error
+    const checkoutId = getConfig().checkoutId;
+    if (checkoutId && getConfig().hasMultiShippingEnabled) {
+      const selectedDealer = getSession(checkoutId).selectedDealer;
+      if (selectedDealer && selectedDealer !== "null") {
+        return 0;
+      }
+    }
+    return null;
+  }
+};
+
 export const SDK = {
   init,
   getConfig,
@@ -320,5 +465,8 @@ export const SDK = {
   saveDealer,
   getMappingData,
   getProducts,
+  getFFLConsignmentIndex,
+  fflProducts,
+  fflLineItems,
   checkoutService: null as CheckoutService | null,
 };
