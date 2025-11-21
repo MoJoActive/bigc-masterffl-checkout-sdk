@@ -272,12 +272,6 @@ const MasterFFLForm = () => {
       isDisabled = isDisabled || !!hasConsignmentAlert || !consignmentShippingOptionsChecked;
     }
 
-    // if the logic is valid, but the button is disabled, keep it disabled
-    if (!isDisabled && button.disabled) {
-      button.disabled = true;
-      return;
-    }
-
     if (button.disabled !== isDisabled) {
       button.disabled = isDisabled;
     }

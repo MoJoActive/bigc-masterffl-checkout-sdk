@@ -762,7 +762,7 @@ const Dt = {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify([{ address: E.address, lineItems: E.lineItems }])
     }
-  ), k().hasMultiShippingEnabled && window.location.reload(), et(r, { selectedDealer: JSON.stringify(a) }), {
+  ), et(r, { selectedDealer: JSON.stringify(a) }), k().hasMultiShippingEnabled && window.location.reload(), {
     dealer: a,
     shippingData: E
   };
@@ -1042,10 +1042,6 @@ const st = kt({}), je = () => {
     if (n.hasMultiShippingEnabled) {
       const C = document.querySelector(".checkout-step--shipping .alertBox--info"), O = document.querySelectorAll(".consignment-container").length, Y = document.querySelectorAll('.consignment-container input[type="radio"]:checked').length === O;
       F = F || !!C || !Y;
-    }
-    if (!F && l.disabled) {
-      l.disabled = !0;
-      return;
     }
     l.disabled !== F && (l.disabled = F);
   }, [n.hasMultiShippingEnabled]);

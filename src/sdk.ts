@@ -242,12 +242,12 @@ const saveDealer = async (checkoutId: string | undefined, dealer: any) => {
     }
   );
 
+  // save the selected dealer to session storage
+  setSession(checkoutId, { selectedDealer: JSON.stringify(dealer) });
+
   if (getConfig().hasMultiShippingEnabled) {
     window.location.reload();
   }
-
-  // save the selected dealer to session storage
-  setSession(checkoutId, { selectedDealer: JSON.stringify(dealer) });
 
   return {
     dealer,
