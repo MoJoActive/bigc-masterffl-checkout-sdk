@@ -1,3 +1,7 @@
+## 1.1.0 (2025-11-21)
+
+* feat: adding support for non-ffl item consignment strategies ([7d4b6f8](https://github.com/MoJoActive/bigc-masterffl-checkout-sdk/commit/7d4b6f8))
+
 ## <small>1.0.3 (2025-11-07)</small>
 
 * fix: force version bump ([03d38ba](https://github.com/MoJoActive/bigc-masterffl-checkout-sdk/commit/03d38ba))
