@@ -1,3 +1,7 @@
+## <small>1.1.2 (2025-11-21)</small>
+
+* fix: update for custom checkout ([df48282](https://github.com/MoJoActive/bigc-masterffl-checkout-sdk/commit/df48282))
+
 ## <small>1.1.1 (2025-11-21)</small>
 
 * fix: updates for multiple consignment disabled button logic ([d96ead0](https://github.com/MoJoActive/bigc-masterffl-checkout-sdk/commit/d96ead0))
