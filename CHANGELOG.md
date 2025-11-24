@@ -1,3 +1,7 @@
+## <small>1.1.3 (2025-11-24)</small>
+
+* fix: update to prevent BigCommerce from deleting the consignment on multi shipments ([18ed04d](https://github.com/MoJoActive/bigc-masterffl-checkout-sdk/commit/18ed04d))
+
 ## <small>1.1.2 (2025-11-21)</small>
 
 * fix: update for custom checkout ([df48282](https://github.com/MoJoActive/bigc-masterffl-checkout-sdk/commit/df48282))
