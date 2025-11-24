@@ -537,11 +537,6 @@ const MasterFFLForm = () => {
     // if split consignments is enabled, click the button to switch to multiple shipping modes
     if (SDK.getConfig().hasMultiShippingEnabled) {
       if (SDK.getConfig().nonFFLItemStrategy !== "FORCE_TO_FFL") {
-        const btnShipMode = document.querySelector('[data-test="shipping-mode-toggle"]') as HTMLButtonElement;
-        if (btnShipMode && btnShipMode.innerText.trim().toLowerCase() === "ship to multiple addresses") {
-          btnShipMode.click();
-        }
-
         setTimeout(() => {
           const btnShipMode = document.querySelector('[data-test="shipping-mode-toggle"]') as HTMLButtonElement;
           if (btnShipMode && btnShipMode.innerText.trim().toLowerCase() === "ship to a single address") {
