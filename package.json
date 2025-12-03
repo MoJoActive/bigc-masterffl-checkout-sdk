@@ -1,6 +1,6 @@
 {
   "name": "bigc-masterffl-checkout-sdk",
-  "version": "1.1.3",
+  "version": "1.1.4",
   "description": "BigCommerce MasterFFL Checkout SDK - A React component library for BigCommerce FFL dealer selection",
   "type": "module",
   "exports": {

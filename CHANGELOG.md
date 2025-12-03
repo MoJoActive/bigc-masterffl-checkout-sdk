@@ -1,3 +1,7 @@
+## <small>1.1.4 (2025-12-03)</small>
+
+* fix: updates for misc test cases (entirely ffl, category mapping, non-ffl items, ffl attr no conditi ([5a64968](https://github.com/MoJoActive/bigc-masterffl-checkout-sdk/commit/5a64968))
+
 ## <small>1.1.3 (2025-11-24)</small>
 
 * fix: update to prevent BigCommerce from deleting the consignment on multi shipments ([18ed04d](https://github.com/MoJoActive/bigc-masterffl-checkout-sdk/commit/18ed04d))
