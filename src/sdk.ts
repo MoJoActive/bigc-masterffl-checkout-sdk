@@ -63,30 +63,34 @@ const init = async () => {
       fflMapping: string;
     }
 
-    const productsWithCategoryMapping = products.map((product: any) => {
-      let lowestPriority: CategoryMappingItem | null = null;
-      const matchedFFLCategories = (mapping.category_mapping as CategoryMappingItem[]).filter((c: CategoryMappingItem) =>
-        product.categoryIds.some((ci: { entityId: number }) => c.categoryId === ci.entityId)
-      );
-
-      if (matchedFFLCategories.length > 0) {
-        const lowestPriorityFFl = matchedFFLCategories.reduce((min: CategoryMappingItem, fflCat: CategoryMappingItem) =>
-          parseInt(fflCat.priority, 10) < parseInt(min.priority, 10) ? fflCat : min
+    const productsWithCategoryMapping = products
+      .map((product: any) => {
+        let lowestPriority: CategoryMappingItem | null = null;
+        const matchedFFLCategories = (mapping.category_mapping as CategoryMappingItem[]).filter((c: CategoryMappingItem) =>
+          product.categoryIds.some((ci: { entityId: number }) => c.categoryId === ci.entityId)
         );
 
-        lowestPriority = lowestPriorityFFl.fflMapping ? lowestPriorityFFl : null;
-      }
+        if (matchedFFLCategories.length > 0) {
+          const lowestPriorityFFl = matchedFFLCategories.reduce((min: CategoryMappingItem, fflCat: CategoryMappingItem) =>
+            parseInt(fflCat.priority, 10) < parseInt(min.priority, 10) ? fflCat : min
+          );
 
-      // if the product has a custom field that is "no", return null
-      if (product.customFields.some((field: any) => field.name.trim().toLowerCase() === ffAttr && field.value.trim().toLowerCase() === 'no')) {
-        return null
-      }
+          lowestPriority = lowestPriorityFFl.fflMapping ? lowestPriorityFFl : null;
+        }
 
-      fflProducts.set(product.entityId, true);
-      fflLineItems.set(product.entityId, product);
+        // if the product has a custom field that is "no", return null
+        if (product.customFields.some((field: any) => field.name.trim().toLowerCase() === ffAttr && field.value.trim().toLowerCase() === "no")) {
+          return null;
+        }
 
-      return { ...product, fflFirearmType: lowestPriority ? lowestPriority.fflMapping : null };
-    }).filter((product: any) => product !== null);
+        if (lowestPriority) {
+          fflProducts.set(product.entityId, true);
+          fflLineItems.set(product.entityId, product);
+        }
+
+        return { ...product, fflFirearmType: lowestPriority ? lowestPriority.fflMapping : null };
+      })
+      .filter((product: any) => product !== null);
 
     isFFL = isFFL || productsWithCategoryMapping.some((product: any) => product.fflFirearmType);
     isSuppressor =
@@ -460,10 +464,13 @@ const getFFLConsignmentIndex = async (): Promise<number | null> => {
 };
 
 const getCheckout = async () => {
-  const response = await fetch(`/api/storefront/checkouts/${getConfig().checkoutId}?include=consignments.lineItems.physicalItems%2Cconsignments.address`, {
-    method: "GET",
-    headers: { "Content-Type": "application/json" },
-  });
+  const response = await fetch(
+    `/api/storefront/checkouts/${getConfig().checkoutId}?include=consignments.lineItems.physicalItems%2Cconsignments.address`,
+    {
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
+    }
+  );
   const data = await response.json();
   return data;
 };
