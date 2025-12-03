@@ -3,6 +3,7 @@ export declare const SDK: {
     init: () => Promise<{
         isFFL: boolean;
         isSuppressor: boolean;
+        isEntirelyFFL: boolean;
     }>;
     getConfig: () => {
         env: "qa" | "production";
@@ -59,6 +60,7 @@ export declare const SDK: {
     }>;
     getMappingData: () => Promise<any>;
     getProducts: (ids: number[] | undefined) => Promise<any>;
+    getCheckout: () => Promise<any>;
     getFFLConsignmentIndex: () => Promise<number | null>;
     fflProducts: Map<number, boolean>;
     fflLineItems: Map<number, any>;

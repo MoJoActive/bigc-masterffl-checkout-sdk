@@ -10,6 +10,7 @@ const init = async () => {
   const [mapping, cart, checkoutSettings] = await Promise.all([getMappingData(), getCart(), getCheckoutSettings()]);
   let isFFL = false;
   let isSuppressor = false;
+  let isEntirelyFFL = false;
 
   window.masterFFLConfig = window.masterFFLConfig || ({} as MasterFFLBaseConfig);
   window.masterFFLConfig.hasMultiShippingEnabled = checkoutSettings.storeConfig.checkoutSettings.hasMultiShippingEnabled;
@@ -54,10 +55,6 @@ const init = async () => {
     }
   });
 
-  if (isFFL || isSuppressor) {
-    return { isFFL, isSuppressor };
-  }
-
   // Detect FFL and Suppressor from Category Mapping
   if (mapping && mapping?.category_mapping.length > 0) {
     interface CategoryMappingItem {
@@ -80,16 +77,28 @@ const init = async () => {
         lowestPriority = lowestPriorityFFl.fflMapping ? lowestPriorityFFl : null;
       }
 
-      return { ...product, fflFirearmType: lowestPriority ? lowestPriority.fflMapping : null };
-    });
+      // if the product has a custom field that is "no", return null
+      if (product.customFields.some((field: any) => field.name.trim().toLowerCase() === ffAttr && field.value.trim().toLowerCase() === 'no')) {
+        return null
+      }
 
-    isFFL = productsWithCategoryMapping.some((product: any) => product.fflFirearmType);
-    isSuppressor = productsWithCategoryMapping.some(
-      (product: any) => product.fflFirearmType && product.fflFirearmType.trim().toLowerCase() === fflFirearmValue?.[3]
-    );
+      fflProducts.set(product.entityId, true);
+      fflLineItems.set(product.entityId, product);
+
+      return { ...product, fflFirearmType: lowestPriority ? lowestPriority.fflMapping : null };
+    }).filter((product: any) => product !== null);
+
+    isFFL = isFFL || productsWithCategoryMapping.some((product: any) => product.fflFirearmType);
+    isSuppressor =
+      isSuppressor ||
+      productsWithCategoryMapping.some(
+        (product: any) => product.fflFirearmType && product.fflFirearmType.trim().toLowerCase() === fflFirearmValue?.[3]?.toLowerCase()
+      );
   }
 
-  return { isFFL, isSuppressor };
+  isEntirelyFFL = products.length === fflProducts.size;
+
+  return { isFFL, isSuppressor, isEntirelyFFL };
 };
 
 const getConfig = () => {
@@ -381,12 +390,9 @@ const getFFLConsignmentIndex = async (): Promise<number | null> => {
     if (!checkoutId) return null;
 
     // Get checkout with consignments
-    const response = await fetch(`/api/storefront/checkouts/${checkoutId}?include=consignments.lineItems.physicalItems%2Cconsignments.address`, {
-      method: "GET",
-      headers: { "Content-Type": "application/json" },
-    });
+    const checkout = await getCheckout();
 
-    if (!response.ok) {
+    if (!checkout) {
       // Fallback: if we have a selected dealer and split consignments is enabled,
       // the FFL consignment is typically the first one (index 0)
       if (getConfig().hasMultiShippingEnabled) {
@@ -398,7 +404,6 @@ const getFFLConsignmentIndex = async (): Promise<number | null> => {
       return null;
     }
 
-    const checkout = await response.json();
     // Handle different response structures (checkout.consignments or checkout.data.consignments)
     const consignments = checkout?.consignments || checkout?.data?.consignments || [];
 
@@ -454,6 +459,15 @@ const getFFLConsignmentIndex = async (): Promise<number | null> => {
   }
 };
 
+const getCheckout = async () => {
+  const response = await fetch(`/api/storefront/checkouts/${getConfig().checkoutId}?include=consignments.lineItems.physicalItems%2Cconsignments.address`, {
+    method: "GET",
+    headers: { "Content-Type": "application/json" },
+  });
+  const data = await response.json();
+  return data;
+};
+
 export const SDK = {
   init,
   getConfig,
@@ -463,6 +477,7 @@ export const SDK = {
   saveDealer,
   getMappingData,
   getProducts,
+  getCheckout,
   getFFLConsignmentIndex,
   fflProducts,
   fflLineItems,

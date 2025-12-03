@@ -15,6 +15,7 @@ export interface MasterFFLContextType {
     setError: (error: string | null) => void;
     isFFL: boolean;
     isSuppressor: boolean;
+    isEntirelyFFL: boolean;
 }
 export declare const renderMasterFFL: () => void;
 //# sourceMappingURL=index.d.ts.map

@@ -48,6 +48,7 @@ export interface MasterFFLContextType {
   setError: (error: string | null) => void;
   isFFL: boolean;
   isSuppressor: boolean;
+  isEntirelyFFL: boolean;
 }
 const MasterFFLContext = createContext<MasterFFLContextType>({} as MasterFFLContextType);
 
@@ -71,6 +72,7 @@ const MasterFFLProvider = ({ children }: { children: React.ReactNode }) => {
   const [error, setError] = useState<string | null>(null);
   const [isFFL, setIsFFL] = useState(false);
   const [isSuppressor, setIsSuppressor] = useState(false);
+  const [isEntirelyFFL, setIsEntirelyFFL] = useState(false);
 
   const handleInit = async () => {
     const { postalCode, acceptTerms, selectedDealer } = SDK.getSession(SDK.getConfig().checkoutId);
@@ -79,13 +81,24 @@ const MasterFFLProvider = ({ children }: { children: React.ReactNode }) => {
     if (acceptTerms) setValues((p) => ({ ...p, acceptTerms: acceptTerms }));
     if (selectedDealer && selectedDealer !== "null") setSelectedDealer(JSON.parse(selectedDealer));
 
-    const { isFFL, isSuppressor } = await SDK.init();
+    const { isFFL, isSuppressor, isEntirelyFFL } = await SDK.init();
 
     setIsFFL(isFFL);
     setIsSuppressor(isSuppressor);
+    setIsEntirelyFFL(isEntirelyFFL);
 
     if (!isFFL && !isSuppressor) {
       handleCleanup();
+    }
+
+    // if the entire cart is FFL and the user has selected a dealer, 
+    // create the consignment if there's no consignments present
+    if (isEntirelyFFL && selectedDealer) {
+      const checkout = await SDK.getCheckout();
+      const dealer = JSON.parse(selectedDealer)
+      if (checkout?.consignments?.length === 0) {
+        await SDK.saveDealer(SDK.getConfig().checkoutId, dealer);
+      }
     }
   };
 
@@ -125,8 +138,9 @@ const MasterFFLProvider = ({ children }: { children: React.ReactNode }) => {
       setError,
       isFFL,
       isSuppressor,
+      isEntirelyFFL,
     };
-  }, [isModalOpen, setIsModalOpen, values, setValues, selectedDealer, setSelectedDealer, error, setError, isFFL, isSuppressor]);
+  }, [isModalOpen, setIsModalOpen, values, setValues, selectedDealer, setSelectedDealer, error, setError, isFFL, isSuppressor, isEntirelyFFL]);
 
   return <MasterFFLContext.Provider value={providerValues}>{children}</MasterFFLContext.Provider>;
 };
@@ -258,7 +272,7 @@ const MasterFFLModal = () => {
 };
 
 const MasterFFLForm = () => {
-  const { values, setValues, selectedDealer, error, setIsModalOpen, isFFL, isSuppressor } = useMasterFFL();
+  const { values, setValues, selectedDealer, error, setIsModalOpen, isFFL, isSuppressor, isEntirelyFFL } = useMasterFFL();
   const [errors, setErrors] = useState({ postalCode: "", acceptTerms: "" });
 
   const observerRef = useRef<MutationObserver | null>(null);
@@ -311,6 +325,10 @@ const MasterFFLForm = () => {
 
     buttonRef.current = button;
 
+    if (SDK.fflLineItems.size === 0) {
+      return;
+    }
+
     // 1. if the user has not accepted the terms
     // 2. if the user has not selected a dealer
     let isDisabled = !acceptTermsRef.current || !selectedDealerRef.current;
@@ -318,13 +336,14 @@ const MasterFFLForm = () => {
     // Only check consignment-related conditions when multi-shipping is enabled
     if (SDK.getConfig().hasMultiShippingEnabled) {
       // find the consignment alert message (shows when there's unconsigned items)
-      const hasConsignmentAlert = document.querySelector('.checkout-step--shipping .alertBox--info') as HTMLDivElement | null;
+      const hasConsignmentAlert = document.querySelector(".checkout-step--shipping .alertBox--info") as HTMLDivElement | null;
 
       // find the number of consignment containers
-      const consignmentCounts = document.querySelectorAll('.consignment-container').length;
-      
+      const consignmentCounts = document.querySelectorAll(".consignment-container").length;
+
       // find the number of consignment shipping options that are checked
-      const consignmentShippingOptionsChecked = document.querySelectorAll('.consignment-container input[type="radio"]:checked').length === consignmentCounts;
+      const consignmentShippingOptionsChecked =
+        document.querySelectorAll('.consignment-container input[type="radio"]:checked').length === consignmentCounts;
 
       // 3. if the user has a consignment alert
       // 4. if the user has not checked all the consignment shipping options
@@ -542,6 +561,13 @@ const MasterFFLForm = () => {
           if (btnShipMode && btnShipMode.innerText.trim().toLowerCase() === "ship to a single address") {
             btnShipMode.style.display = "none";
           }
+
+          // hide multiple shipping mode button if the entire cart is FFL          
+          if (isEntirelyFFL) {
+            if (btnShipMode && btnShipMode.innerText.trim().toLowerCase() === "ship to multiple addresses") {
+              btnShipMode.style.display = "none";
+            }
+          }
         }, 0);
       } else {
         const btnShipMode = document.querySelector('[data-test="shipping-mode-toggle"]') as HTMLButtonElement;
@@ -751,7 +777,9 @@ const MasterFFLForm = () => {
             #checkoutShippingAddress, #sameAsBilling, #sameAsBilling + label { display: none; }
             .consignment-container--ffl [data-test="edit-shipping-address"] { display: none; }
             .consignment-container--ffl [data-test="delete-consignment-button"] { display: none; }
-            ${SDK.getConfig().hasMultiShippingEnabled && `           
+            ${
+              SDK.getConfig().hasMultiShippingEnabled &&
+              `           
               ${
                 // if the user can choose which consignment to put the items on, hide the remove buttons for the ffl line items
                 // they cannot move these items to a non-ffl address
@@ -787,6 +815,10 @@ export const renderMasterFFL = () => {
   const returnToShipping = () => {
     const selectedDealer = SDK.getSession(SDK.getConfig().checkoutId).selectedDealer;
     const acceptTerms = SDK.getSession(SDK.getConfig().checkoutId).acceptTerms;
+
+    if (SDK.fflLineItems.size === 0) {
+      return;
+    }
 
     if (!selectedDealer || !acceptTerms) {
       const destination = document.querySelector(DESTINATION_ELEMENT);
