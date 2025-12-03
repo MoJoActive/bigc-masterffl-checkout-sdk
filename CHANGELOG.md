@@ -1,3 +1,7 @@
+## <small>1.1.5 (2025-12-03)</small>
+
+* fix: correcting the ffl product set based on category mappings ([f21b7a1](https://github.com/MoJoActive/bigc-masterffl-checkout-sdk/commit/f21b7a1))
+
 ## <small>1.1.4 (2025-12-03)</small>
 
 * fix: updates for misc test cases (entirely ffl, category mapping, non-ffl items, ffl attr no conditi ([5a64968](https://github.com/MoJoActive/bigc-masterffl-checkout-sdk/commit/5a64968))
