@@ -463,6 +463,13 @@ const getFFLConsignmentIndex = async (): Promise<number | null> => {
   }
 };
 
+const removeConsignment = async (checkoutId: string | undefined, consignmentId: string) => {
+  await fetch(`/api/storefront/checkouts/${checkoutId}/consignments/${consignmentId}`, {
+    method: "DELETE",
+    headers: { "Content-Type": "application/json" },
+  });
+};
+
 const getCheckout = async () => {
   const response = await fetch(
     `/api/storefront/checkouts/${getConfig().checkoutId}?include=consignments.lineItems.physicalItems%2Cconsignments.address`,
@@ -482,6 +489,7 @@ export const SDK = {
   setSession,
   removeSession,
   saveDealer,
+  removeConsignment,
   getMappingData,
   getProducts,
   getCheckout,

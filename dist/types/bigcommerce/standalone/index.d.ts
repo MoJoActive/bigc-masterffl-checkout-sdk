@@ -16,6 +16,9 @@ export interface MasterFFLContextType {
     isFFL: boolean;
     isSuppressor: boolean;
     isEntirelyFFL: boolean;
+    checkout: any;
+    setCheckout: (checkout: any) => void;
+    fixInvalidConsignments: (checkout: any) => Promise<void>;
 }
 export declare const renderMasterFFL: () => void;
 //# sourceMappingURL=index.d.ts.map

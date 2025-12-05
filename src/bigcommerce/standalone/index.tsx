@@ -49,6 +49,9 @@ export interface MasterFFLContextType {
   isFFL: boolean;
   isSuppressor: boolean;
   isEntirelyFFL: boolean;
+  checkout: any;
+  setCheckout: (checkout: any) => void;
+  fixInvalidConsignments: (checkout: any) => Promise<void>;
 }
 const MasterFFLContext = createContext<MasterFFLContextType>({} as MasterFFLContextType);
 
@@ -73,6 +76,7 @@ const MasterFFLProvider = ({ children }: { children: React.ReactNode }) => {
   const [isFFL, setIsFFL] = useState(false);
   const [isSuppressor, setIsSuppressor] = useState(false);
   const [isEntirelyFFL, setIsEntirelyFFL] = useState(false);
+  const [checkout, setCheckout] = useState<any>(null);
 
   const handleInit = async () => {
     const { postalCode, acceptTerms, selectedDealer } = SDK.getSession(SDK.getConfig().checkoutId);
@@ -81,24 +85,63 @@ const MasterFFLProvider = ({ children }: { children: React.ReactNode }) => {
     if (acceptTerms) setValues((p) => ({ ...p, acceptTerms: acceptTerms }));
     if (selectedDealer && selectedDealer !== "null") setSelectedDealer(JSON.parse(selectedDealer));
 
+    const checkout = await SDK.getCheckout();
+    setCheckout(checkout);
+
     const { isFFL, isSuppressor, isEntirelyFFL } = await SDK.init();
 
     setIsFFL(isFFL);
     setIsSuppressor(isSuppressor);
     setIsEntirelyFFL(isEntirelyFFL);
 
+    if (selectedDealer) {
+      if (checkout?.consignments?.length === 0) {
+        await SDK.saveDealer(SDK.getConfig().checkoutId, JSON.parse(selectedDealer));
+      } else {
+        await handleFixInvalidConsignments(checkout);
+      }
+    }
+
     if (!isFFL && !isSuppressor) {
       handleCleanup();
     }
+  };
 
-    // if the entire cart is FFL and the user has selected a dealer, 
-    // create the consignment if there's no consignments present
-    if (isEntirelyFFL && selectedDealer) {
-      const checkout = await SDK.getCheckout();
-      const dealer = JSON.parse(selectedDealer)
-      if (checkout?.consignments?.length === 0) {
-        await SDK.saveDealer(SDK.getConfig().checkoutId, dealer);
+  const handleFixInvalidConsignments = async (checkout: any) => {
+    try {
+      if (!checkout) return;
+
+      const consignments = checkout.consignments || [];
+      if (consignments.length === 0) {
+        return;
       }
+
+      for (const consignment of consignments) {
+        const lineItemIds = consignment.lineItemIds || [];
+
+        if (lineItemIds.length === 0) {
+          return;
+        }
+
+        // if any of the items are FFL/NFA and are not attached to the dealer delete the consignment
+        const hasFFLItems = lineItemIds.some((itemId: number) => {
+          const item = checkout.cart.lineItems.physicalItems.find((item: any) => item.id === itemId);
+          return SDK.fflProducts.get(item.productId);
+        });
+
+        const dealer = JSON.parse(SDK.getSession(SDK.getConfig().checkoutId)?.selectedDealer || "{}");
+
+        const isFFLConsignment =
+          consignment.shippingAddress.address1 === dealer?.contact?.address?.street1 &&
+          consignment.shippingAddress.postalCode === dealer?.contact?.address?.zip;
+
+        if (hasFFLItems && !isFFLConsignment) {
+          await SDK.removeConsignment(SDK.getConfig().checkoutId, consignment.id);
+          await SDK.saveDealer(SDK.getConfig().checkoutId, dealer);
+        }
+      }
+    } catch (error) {
+      console.error(error);
     }
   };
 
@@ -139,8 +182,26 @@ const MasterFFLProvider = ({ children }: { children: React.ReactNode }) => {
       isFFL,
       isSuppressor,
       isEntirelyFFL,
+      checkout,
+      setCheckout,
+      fixInvalidConsignments: handleFixInvalidConsignments,
     };
-  }, [isModalOpen, setIsModalOpen, values, setValues, selectedDealer, setSelectedDealer, error, setError, isFFL, isSuppressor, isEntirelyFFL]);
+  }, [
+    isModalOpen,
+    setIsModalOpen,
+    values,
+    setValues,
+    selectedDealer,
+    setSelectedDealer,
+    error,
+    setError,
+    isFFL,
+    isSuppressor,
+    isEntirelyFFL,
+    checkout,
+    setCheckout,
+    handleFixInvalidConsignments,
+  ]);
 
   return <MasterFFLContext.Provider value={providerValues}>{children}</MasterFFLContext.Provider>;
 };
@@ -179,6 +240,13 @@ const MasterFFLModal = () => {
 
   const dealerSelectionCallback = async (selectedDealer: any) => {
     if (!selectedDealer) return;
+
+    const checkout = await SDK.getCheckout();
+    for (const consignment of checkout.consignments) {
+      if (consignment.id) {
+        await SDK.removeConsignment(SDK.getConfig().checkoutId, consignment.id);
+      }
+    }
 
     const { shippingData, dealer } = await SDK.saveDealer(SDK.getConfig().checkoutId, selectedDealer);
     const address = shippingData.address;
@@ -272,7 +340,8 @@ const MasterFFLModal = () => {
 };
 
 const MasterFFLForm = () => {
-  const { values, setValues, selectedDealer, error, setIsModalOpen, isFFL, isSuppressor, isEntirelyFFL } = useMasterFFL();
+  const { values, setValues, selectedDealer, error, setIsModalOpen, isFFL, isSuppressor, isEntirelyFFL, checkout, fixInvalidConsignments } =
+    useMasterFFL();
   const [errors, setErrors] = useState({ postalCode: "", acceptTerms: "" });
 
   const observerRef = useRef<MutationObserver | null>(null);
@@ -398,25 +467,6 @@ const MasterFFLForm = () => {
         return;
       }
 
-      // Get the FFL consignment data from the API to match against DOM
-      const checkoutId = SDK.getConfig().checkoutId;
-      if (!checkoutId) {
-        isMarkingConsignmentRef.current = false;
-        return;
-      }
-
-      // Get checkout with consignments to find the FFL one
-      const response = await fetch(`/api/storefront/checkouts/${checkoutId}?include=consignments.lineItems.physicalItems%2Cconsignments.address`, {
-        method: "GET",
-        headers: { "Content-Type": "application/json" },
-      });
-
-      if (!response.ok) {
-        isMarkingConsignmentRef.current = false;
-        return;
-      }
-
-      const checkout = await response.json();
       const consignments = checkout?.consignments || checkout?.data?.consignments || [];
 
       // Find the FFL consignment from API data
@@ -487,7 +537,6 @@ const MasterFFLForm = () => {
       }
 
       if (!fflConsignment) {
-        console.warn("Could not find FFL consignment in API data");
         isMarkingConsignmentRef.current = false;
         return;
       }
@@ -497,11 +546,24 @@ const MasterFFLForm = () => {
         container.classList.remove("consignment-container--ffl");
       });
 
+      const handleHideAddressToggle = (consignment: any) => {
+        const addressToggle = consignment.querySelector("#addressToggle") as HTMLLinkElement;
+        if (addressToggle) {
+          const parent = addressToggle.parentElement;
+          if (parent) {
+            parent.style.display = "none";
+
+            consignment.querySelector(".consignment-header h3").textContent = "FFL Destination";
+          }
+        }
+      };
+
       // Try to find the matching DOM container
       // Method 1: Check for consignment ID in data attributes
       if (fflConsignmentId) {
         for (let i = 0; i < containers.length; i++) {
           const container = containers[i];
+
           // Check if container has data-consignment-id or similar attribute
           const containerId =
             container.getAttribute("data-consignment-id") ||
@@ -510,7 +572,9 @@ const MasterFFLForm = () => {
 
           if (containerId && containerId === String(fflConsignmentId)) {
             container.classList.add("consignment-container--ffl");
+            container.setAttribute("data-index", String(i));
             isMarkingConsignmentRef.current = false;
+            handleHideAddressToggle(container);
             return;
           }
         }
@@ -521,6 +585,7 @@ const MasterFFLForm = () => {
       if (fflAddress) {
         for (let i = 0; i < containers.length; i++) {
           const container = containers[i];
+
           const addressText = container.textContent || "";
 
           // Match by postal code and street address
@@ -532,23 +597,17 @@ const MasterFFLForm = () => {
           // Require at least postal code and one other match
           if (postalCodeMatch && (streetMatch || (cityMatch && stateMatch))) {
             container.classList.add("consignment-container--ffl");
+            container.setAttribute("data-index", String(i));
             isMarkingConsignmentRef.current = false;
+            handleHideAddressToggle(container);
             return;
           }
         }
       }
-
-      // Method 3: Fallback to API index (last resort)
-      const fflIndex = await SDK.getFFLConsignmentIndex();
-      if (fflIndex !== null && fflIndex >= 0 && fflIndex < containers.length) {
-        containers[fflIndex].classList.add("consignment-container--ffl");
-      } else {
-        console.warn("Could not match FFL consignment to DOM container");
-      }
     } finally {
       isMarkingConsignmentRef.current = false;
     }
-  }, [selectedDealer]);
+  }, [selectedDealer, checkout]);
 
   useEffect(() => {
     if (!isFFL && !isSuppressor) return;
@@ -562,7 +621,7 @@ const MasterFFLForm = () => {
             btnShipMode.style.display = "none";
           }
 
-          // hide multiple shipping mode button if the entire cart is FFL          
+          // hide multiple shipping mode button if the entire cart is FFL
           if (isEntirelyFFL) {
             if (btnShipMode && btnShipMode.innerText.trim().toLowerCase() === "ship to multiple addresses") {
               btnShipMode.style.display = "none";
@@ -660,6 +719,29 @@ const MasterFFLForm = () => {
       handleSubmit(e);
     }
   };
+
+  useEffect(() => {
+    const callback = async (e: any) => {
+      // if the target is a[data-test="shipping-mode-toggle"] then log it
+      if (e.target.tagName === "A" && e.target.getAttribute("data-test") === "shipping-mode-toggle") {
+        const dealer = JSON.parse(SDK.getSession(SDK.getConfig().checkoutId).selectedDealer || "{}");
+        if (dealer) {
+          await SDK.saveDealer(SDK.getConfig().checkoutId, dealer);
+        }
+      }
+
+      if (e.target.id === "checkout-shipping-continue") {
+        const checkout = await SDK.getCheckout();
+        await fixInvalidConsignments(checkout);
+      }
+    };
+
+    document.addEventListener("click", callback);
+
+    return () => {
+      document.removeEventListener("click", callback);
+    };
+  }, []);
 
   if (!isFFL && !isSuppressor) {
     return null;

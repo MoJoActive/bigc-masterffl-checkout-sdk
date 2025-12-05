@@ -58,6 +58,7 @@ export declare const SDK: {
             lineItems: any[];
         };
     }>;
+    removeConsignment: (checkoutId: string | undefined, consignmentId: string) => Promise<void>;
     getMappingData: () => Promise<any>;
     getProducts: (ids: number[] | undefined) => Promise<any>;
     getCheckout: () => Promise<any>;

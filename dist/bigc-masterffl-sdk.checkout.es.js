@@ -14,15 +14,15 @@ var Je;
 function Rt() {
   if (Je) return be;
   Je = 1;
-  var n = Ge, o = Symbol.for("react.element"), d = Symbol.for("react.fragment"), r = Object.prototype.hasOwnProperty, a = n.__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED.ReactCurrentOwner, p = { key: !0, ref: !0, __self: !0, __source: !0 };
-  function I(L, h, y) {
+  var n = Ge, s = Symbol.for("react.element"), d = Symbol.for("react.fragment"), r = Object.prototype.hasOwnProperty, a = n.__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED.ReactCurrentOwner, p = { key: !0, ref: !0, __self: !0, __source: !0 };
+  function L(I, h, y) {
     var C, _ = {}, f = null, l = null;
     y !== void 0 && (f = "" + y), h.key !== void 0 && (f = "" + h.key), h.ref !== void 0 && (l = h.ref);
     for (C in h) r.call(h, C) && !p.hasOwnProperty(C) && (_[C] = h[C]);
-    if (L && L.defaultProps) for (C in h = L.defaultProps, h) _[C] === void 0 && (_[C] = h[C]);
-    return { $$typeof: o, type: L, key: f, ref: l, props: _, _owner: a.current };
+    if (I && I.defaultProps) for (C in h = I.defaultProps, h) _[C] === void 0 && (_[C] = h[C]);
+    return { $$typeof: s, type: I, key: f, ref: l, props: _, _owner: a.current };
   }
-  return be.Fragment = d, be.jsx = I, be.jsxs = I, be;
+  return be.Fragment = d, be.jsx = L, be.jsxs = L, be;
 }
 var Ce = {};
 /**
@@ -37,7 +37,7 @@ var Ce = {};
 var Ke;
 function Dt() {
   return Ke || (Ke = 1, process.env.NODE_ENV !== "production" && function() {
-    var n = Ge, o = Symbol.for("react.element"), d = Symbol.for("react.portal"), r = Symbol.for("react.fragment"), a = Symbol.for("react.strict_mode"), p = Symbol.for("react.profiler"), I = Symbol.for("react.provider"), L = Symbol.for("react.context"), h = Symbol.for("react.forward_ref"), y = Symbol.for("react.suspense"), C = Symbol.for("react.suspense_list"), _ = Symbol.for("react.memo"), f = Symbol.for("react.lazy"), l = Symbol.for("react.offscreen"), E = Symbol.iterator, W = "@@iterator";
+    var n = Ge, s = Symbol.for("react.element"), d = Symbol.for("react.portal"), r = Symbol.for("react.fragment"), a = Symbol.for("react.strict_mode"), p = Symbol.for("react.profiler"), L = Symbol.for("react.provider"), I = Symbol.for("react.context"), h = Symbol.for("react.forward_ref"), y = Symbol.for("react.suspense"), C = Symbol.for("react.suspense_list"), _ = Symbol.for("react.memo"), f = Symbol.for("react.lazy"), l = Symbol.for("react.offscreen"), E = Symbol.iterator, W = "@@iterator";
     function A(e) {
       if (e === null || typeof e != "object")
         return null;
@@ -47,16 +47,16 @@ function Dt() {
     var S = n.__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED;
     function T(e) {
       {
-        for (var t = arguments.length, s = new Array(t > 1 ? t - 1 : 0), i = 1; i < t; i++)
-          s[i - 1] = arguments[i];
-        Y("error", e, s);
+        for (var t = arguments.length, o = new Array(t > 1 ? t - 1 : 0), i = 1; i < t; i++)
+          o[i - 1] = arguments[i];
+        Y("error", e, o);
       }
     }
-    function Y(e, t, s) {
+    function Y(e, t, o) {
       {
         var i = S.ReactDebugCurrentFrame, v = i.getStackAddendum();
-        v !== "" && (t += "%s", s = s.concat([v]));
-        var F = s.map(function(g) {
+        v !== "" && (t += "%s", o = o.concat([v]));
+        var F = o.map(function(g) {
           return String(g);
         });
         F.unshift("Warning: " + t), Function.prototype.apply.call(console[e], console, F);
@@ -65,18 +65,18 @@ function Dt() {
     var K = !1, ne = !1, se = !1, ce = !1, u = !1, w;
     w = Symbol.for("react.module.reference");
     function b(e) {
-      return !!(typeof e == "string" || typeof e == "function" || e === r || e === p || u || e === a || e === y || e === C || ce || e === l || K || ne || se || typeof e == "object" && e !== null && (e.$$typeof === f || e.$$typeof === _ || e.$$typeof === I || e.$$typeof === L || e.$$typeof === h || // This needs to include all possible module reference object
+      return !!(typeof e == "string" || typeof e == "function" || e === r || e === p || u || e === a || e === y || e === C || ce || e === l || K || ne || se || typeof e == "object" && e !== null && (e.$$typeof === f || e.$$typeof === _ || e.$$typeof === L || e.$$typeof === I || e.$$typeof === h || // This needs to include all possible module reference object
       // types supported by any Flight configuration anywhere since
       // we don't know which Flight build this will end up being used
       // with.
       e.$$typeof === w || e.getModuleId !== void 0));
     }
-    function O(e, t, s) {
+    function O(e, t, o) {
       var i = e.displayName;
       if (i)
         return i;
       var v = t.displayName || t.name || "";
-      return v !== "" ? s + "(" + v + ")" : s;
+      return v !== "" ? o + "(" + v + ")" : o;
     }
     function H(e) {
       return e.displayName || "Context";
@@ -104,12 +104,12 @@ function Dt() {
       }
       if (typeof e == "object")
         switch (e.$$typeof) {
-          case L:
+          case I:
             var t = e;
             return H(t) + ".Consumer";
-          case I:
-            var s = e;
-            return H(s._context) + ".Provider";
+          case L:
+            var o = e;
+            return H(o._context) + ".Provider";
           case h:
             return O(e, e.render, "ForwardRef");
           case _:
@@ -189,7 +189,7 @@ function Dt() {
       }
     }
     var le = S.ReactCurrentDispatcher, Q;
-    function ue(e, t, s) {
+    function ue(e, t, o) {
       {
         if (Q === void 0)
           try {
@@ -211,9 +211,9 @@ function Dt() {
       if (!e || ye)
         return "";
       {
-        var s = Z.get(e);
-        if (s !== void 0)
-          return s;
+        var o = Z.get(e);
+        if (o !== void 0)
+          return o;
       }
       var i;
       ye = !0;
@@ -278,14 +278,14 @@ function Dt() {
       var fe = e ? e.displayName || e.name : "", ae = fe ? ue(fe) : "";
       return typeof e == "function" && Z.set(e, ae), ae;
     }
-    function it(e, t, s) {
+    function it(e, t, o) {
       return Re(e, !1);
     }
     function ct(e) {
       var t = e.prototype;
       return !!(t && t.isReactComponent);
     }
-    function Se(e, t, s) {
+    function Se(e, t, o) {
       if (e == null)
         return "";
       if (typeof e == "function")
@@ -303,11 +303,11 @@ function Dt() {
           case h:
             return it(e.render);
           case _:
-            return Se(e.type, t, s);
+            return Se(e.type, t, o);
           case f: {
             var i = e, v = i._payload, F = i._init;
             try {
-              return Se(F(v), t, s);
+              return Se(F(v), t, o);
             } catch {
             }
           }
@@ -317,12 +317,12 @@ function Dt() {
     var ve = Object.prototype.hasOwnProperty, De = {}, Pe = S.ReactDebugCurrentFrame;
     function Ee(e) {
       if (e) {
-        var t = e._owner, s = Se(e.type, e._source, t ? t.type : null);
-        Pe.setExtraStackFrame(s);
+        var t = e._owner, o = Se(e.type, e._source, t ? t.type : null);
+        Pe.setExtraStackFrame(o);
       } else
         Pe.setExtraStackFrame(null);
     }
-    function lt(e, t, s, i, v) {
+    function lt(e, t, o, i, v) {
       {
         var F = Function.call.bind(ve);
         for (var g in e)
@@ -330,14 +330,14 @@ function Dt() {
             var m = void 0;
             try {
               if (typeof e[g] != "function") {
-                var P = Error((i || "React class") + ": " + s + " type `" + g + "` is invalid; it must be a function, usually from the `prop-types` package, but received `" + typeof e[g] + "`.This often happens because of typos such as `PropTypes.function` instead of `PropTypes.func`.");
+                var P = Error((i || "React class") + ": " + o + " type `" + g + "` is invalid; it must be a function, usually from the `prop-types` package, but received `" + typeof e[g] + "`.This often happens because of typos such as `PropTypes.function` instead of `PropTypes.func`.");
                 throw P.name = "Invariant Violation", P;
               }
-              m = e[g](t, g, i, s, null, "SECRET_DO_NOT_PASS_THIS_OR_YOU_WILL_BE_FIRED");
+              m = e[g](t, g, i, o, null, "SECRET_DO_NOT_PASS_THIS_OR_YOU_WILL_BE_FIRED");
             } catch (k) {
               m = k;
             }
-            m && !(m instanceof Error) && (Ee(v), T("%s: type specification of %s `%s` is invalid; the type checker function must return `null` or an `Error` but returned a %s. You may have forgotten to pass an argument to the type checker creator (arrayOf, instanceOf, objectOf, oneOf, oneOfType, and shape all require an argument).", i || "React class", s, g, typeof m), Ee(null)), m instanceof Error && !(m.message in De) && (De[m.message] = !0, Ee(v), T("Failed %s type: %s", s, m.message), Ee(null));
+            m && !(m instanceof Error) && (Ee(v), T("%s: type specification of %s `%s` is invalid; the type checker function must return `null` or an `Error` but returned a %s. You may have forgotten to pass an argument to the type checker creator (arrayOf, instanceOf, objectOf, oneOf, oneOfType, and shape all require an argument).", i || "React class", o, g, typeof m), Ee(null)), m instanceof Error && !(m.message in De) && (De[m.message] = !0, Ee(v), T("Failed %s type: %s", o, m.message), Ee(null));
           }
       }
     }
@@ -347,8 +347,8 @@ function Dt() {
     }
     function dt(e) {
       {
-        var t = typeof Symbol == "function" && Symbol.toStringTag, s = t && e[Symbol.toStringTag] || e.constructor.name || "Object";
-        return s;
+        var t = typeof Symbol == "function" && Symbol.toStringTag, o = t && e[Symbol.toStringTag] || e.constructor.name || "Object";
+        return o;
       }
     }
     function ft(e) {
@@ -392,34 +392,34 @@ function Dt() {
     }
     function yt(e, t) {
       {
-        var s = function() {
+        var o = function() {
           Ne || (Ne = !0, T("%s: `key` is not a prop. Trying to access it will result in `undefined` being returned. If you need to access the same value within the child component, you should pass it as a different prop. (https://reactjs.org/link/special-props)", t));
         };
-        s.isReactWarning = !0, Object.defineProperty(e, "key", {
-          get: s,
+        o.isReactWarning = !0, Object.defineProperty(e, "key", {
+          get: o,
           configurable: !0
         });
       }
     }
     function vt(e, t) {
       {
-        var s = function() {
+        var o = function() {
           qe || (qe = !0, T("%s: `ref` is not a prop. Trying to access it will result in `undefined` being returned. If you need to access the same value within the child component, you should pass it as a different prop. (https://reactjs.org/link/special-props)", t));
         };
-        s.isReactWarning = !0, Object.defineProperty(e, "ref", {
-          get: s,
+        o.isReactWarning = !0, Object.defineProperty(e, "ref", {
+          get: o,
           configurable: !0
         });
       }
     }
-    var bt = function(e, t, s, i, v, F, g) {
+    var bt = function(e, t, o, i, v, F, g) {
       var m = {
         // This tag allows us to uniquely identify this as a React Element
-        $$typeof: o,
+        $$typeof: s,
         // Built-in properties that belong on the element
         type: e,
         key: t,
-        ref: s,
+        ref: o,
         props: g,
         // Record the component responsible for creating this element.
         _owner: F
@@ -441,10 +441,10 @@ function Dt() {
         value: v
       }), Object.freeze && (Object.freeze(m.props), Object.freeze(m)), m;
     };
-    function Ct(e, t, s, i, v) {
+    function Ct(e, t, o, i, v) {
       {
         var F, g = {}, m = null, P = null;
-        s !== void 0 && (Ae(s), m = "" + s), ht(t) && (Ae(t.key), m = "" + t.key), mt(t) && (P = t.ref, gt(t, v));
+        o !== void 0 && (Ae(o), m = "" + o), ht(t) && (Ae(t.key), m = "" + t.key), mt(t) && (P = t.ref, gt(t, v));
         for (F in t)
           ve.call(t, F) && !pt.hasOwnProperty(F) && (g[F] = t[F]);
         if (e && e.defaultProps) {
@@ -459,23 +459,23 @@ function Dt() {
         return bt(e, m, P, v, i, $e.current, g);
       }
     }
-    var Ie = S.ReactCurrentOwner, Ue = S.ReactDebugCurrentFrame;
+    var Le = S.ReactCurrentOwner, Ue = S.ReactDebugCurrentFrame;
     function de(e) {
       if (e) {
-        var t = e._owner, s = Se(e.type, e._source, t ? t.type : null);
-        Ue.setExtraStackFrame(s);
+        var t = e._owner, o = Se(e.type, e._source, t ? t.type : null);
+        Ue.setExtraStackFrame(o);
       } else
         Ue.setExtraStackFrame(null);
     }
-    var Le;
-    Le = !1;
+    var Ie;
+    Ie = !1;
     function _e(e) {
-      return typeof e == "object" && e !== null && e.$$typeof === o;
+      return typeof e == "object" && e !== null && e.$$typeof === s;
     }
     function Ve() {
       {
-        if (Ie.current) {
-          var e = $(Ie.current.type);
+        if (Le.current) {
+          var e = $(Le.current.type);
           if (e)
             return `
 
@@ -492,10 +492,10 @@ Check the render method of \`` + e + "`.";
       {
         var t = Ve();
         if (!t) {
-          var s = typeof e == "string" ? e : e.displayName || e.name;
-          s && (t = `
+          var o = typeof e == "string" ? e : e.displayName || e.name;
+          o && (t = `
 
-Check the top-level render call using <` + s + ">.");
+Check the top-level render call using <` + o + ">.");
         }
         return t;
       }
@@ -505,12 +505,12 @@ Check the top-level render call using <` + s + ">.");
         if (!e._store || e._store.validated || e.key != null)
           return;
         e._store.validated = !0;
-        var s = Ft(t);
-        if (We[s])
+        var o = Ft(t);
+        if (We[o])
           return;
-        We[s] = !0;
+        We[o] = !0;
         var i = "";
-        e && e._owner && e._owner !== Ie.current && (i = " It was passed a child from " + $(e._owner.type) + "."), de(e), T('Each child in a list should have a unique "key" prop.%s%s See https://reactjs.org/link/warning-keys for more information.', s, i), de(null);
+        e && e._owner && e._owner !== Le.current && (i = " It was passed a child from " + $(e._owner.type) + "."), de(e), T('Each child in a list should have a unique "key" prop.%s%s See https://reactjs.org/link/warning-keys for more information.', o, i), de(null);
       }
     }
     function He(e, t) {
@@ -518,8 +518,8 @@ Check the top-level render call using <` + s + ">.");
         if (typeof e != "object")
           return;
         if (Te(e))
-          for (var s = 0; s < e.length; s++) {
-            var i = e[s];
+          for (var o = 0; o < e.length; o++) {
+            var i = e[o];
             _e(i) && Ye(i, t);
           }
         else if (_e(e))
@@ -537,20 +537,20 @@ Check the top-level render call using <` + s + ">.");
         var t = e.type;
         if (t == null || typeof t == "string")
           return;
-        var s;
+        var o;
         if (typeof t == "function")
-          s = t.propTypes;
+          o = t.propTypes;
         else if (typeof t == "object" && (t.$$typeof === h || // Note: Memo only checks outer props here.
         // Inner props are checked in the reconciler.
         t.$$typeof === _))
-          s = t.propTypes;
+          o = t.propTypes;
         else
           return;
-        if (s) {
+        if (o) {
           var i = $(t);
-          lt(s, e.props, "prop", i, e);
-        } else if (t.PropTypes !== void 0 && !Le) {
-          Le = !0;
+          lt(o, e.props, "prop", i, e);
+        } else if (t.PropTypes !== void 0 && !Ie) {
+          Ie = !0;
           var v = $(t);
           T("Component %s declared `PropTypes` instead of `propTypes`. Did you misspell the property assignment?", v || "Unknown");
         }
@@ -559,8 +559,8 @@ Check the top-level render call using <` + s + ">.");
     }
     function Et(e) {
       {
-        for (var t = Object.keys(e.props), s = 0; s < t.length; s++) {
-          var i = t[s];
+        for (var t = Object.keys(e.props), o = 0; o < t.length; o++) {
+          var i = t[o];
           if (i !== "children" && i !== "key") {
             de(e), T("Invalid prop `%s` supplied to `React.Fragment`. React.Fragment can only have `key` and `children` props.", i), de(null);
             break;
@@ -570,7 +570,7 @@ Check the top-level render call using <` + s + ">.");
       }
     }
     var Be = {};
-    function ze(e, t, s, i, v, F) {
+    function ze(e, t, o, i, v, F) {
       {
         var g = b(e);
         if (!g) {
@@ -579,9 +579,9 @@ Check the top-level render call using <` + s + ">.");
           var P = wt();
           P ? m += P : m += Ve();
           var k;
-          e === null ? k = "null" : Te(e) ? k = "array" : e !== void 0 && e.$$typeof === o ? (k = "<" + ($(e.type) || "Unknown") + " />", m = " Did you accidentally export a JSX literal instead of a component?") : k = typeof e, T("React.jsx: type is invalid -- expected a string (for built-in components) or a class/function (for composite components) but got: %s.%s", k, m);
+          e === null ? k = "null" : Te(e) ? k = "array" : e !== void 0 && e.$$typeof === s ? (k = "<" + ($(e.type) || "Unknown") + " />", m = " Did you accidentally export a JSX literal instead of a component?") : k = typeof e, T("React.jsx: type is invalid -- expected a string (for built-in components) or a class/function (for composite components) but got: %s.%s", k, m);
         }
-        var j = Ct(e, t, s, v, F);
+        var j = Ct(e, t, o, v, F);
         if (j == null)
           return j;
         if (g) {
@@ -614,14 +614,14 @@ React keys must be passed directly to JSX without using spread:
         return e === r ? Et(j) : St(j), j;
       }
     }
-    function Tt(e, t, s) {
-      return ze(e, t, s, !0);
+    function Tt(e, t, o) {
+      return ze(e, t, o, !0);
     }
-    function It(e, t, s) {
-      return ze(e, t, s, !1);
+    function Lt(e, t, o) {
+      return ze(e, t, o, !1);
     }
-    var Lt = It, _t = Tt;
-    Ce.Fragment = r, Ce.jsx = Lt, Ce.jsxs = _t;
+    var It = Lt, _t = Tt;
+    Ce.Fragment = r, Ce.jsx = It, Ce.jsxs = _t;
   }()), Ce;
 }
 process.env.NODE_ENV === "production" ? ke.exports = Rt() : ke.exports = Dt();
@@ -643,17 +643,17 @@ const Pt = {
   termsLabel: "I understand that this item will be shipped to the FFL dealer I have selected above. I agree that it is my sole responsibility to coordinate with the FFL dealer for the fulfillment of this item.",
   selectedDealerLabel: "Selected Dealer"
 }, re = /* @__PURE__ */ new Map(), je = /* @__PURE__ */ new Map(), $t = async () => {
-  const [n, o, d] = await Promise.all([Ze(), Qe(), Nt()]);
+  const [n, s, d] = await Promise.all([Ze(), Qe(), Nt()]);
   let r = !1, a = !1, p = !1;
   window.masterFFLConfig = window.masterFFLConfig || {}, window.masterFFLConfig.hasMultiShippingEnabled = d.storeConfig.checkoutSettings.hasMultiShippingEnabled;
-  const I = n?.ffl_custom_attribute_name.trim().toLowerCase(), L = n?.ffl_custom_attribute_value.trim().toLowerCase(), h = n?.ffl_firearm_custom_attribute_name.trim().toLowerCase(), y = n?.ffl_firearm_custom_attribute_value, C = o?.lineItems.physicalItems.map((f) => f.productEntityId), _ = await M.getProducts(C);
-  if (r = _.some((f) => f.customFields.some((l) => l.name.trim().toLowerCase() === I && l.value.trim().toLowerCase() === L)), a = _.some((f) => f.customFields.some(
+  const L = n?.ffl_custom_attribute_name.trim().toLowerCase(), I = n?.ffl_custom_attribute_value.trim().toLowerCase(), h = n?.ffl_firearm_custom_attribute_name.trim().toLowerCase(), y = n?.ffl_firearm_custom_attribute_value, C = s?.lineItems.physicalItems.map((f) => f.productEntityId), _ = await M.getProducts(C);
+  if (r = _.some((f) => f.customFields.some((l) => l.name.trim().toLowerCase() === L && l.value.trim().toLowerCase() === I)), a = _.some((f) => f.customFields.some(
     (l) => l.name.trim().toLowerCase() === h && l.value.trim().toLowerCase() === y?.[3]?.toLowerCase()
   )), _.forEach((f) => {
-    f.customFields.some((l) => l.name.trim().toLowerCase() === I && l.value.trim().toLowerCase() === L) && re.set(f.entityId, f), f.customFields.some(
+    f.customFields.some((l) => l.name.trim().toLowerCase() === L && l.value.trim().toLowerCase() === I) && re.set(f.entityId, f), f.customFields.some(
       (l) => l.name.trim().toLowerCase() === h && l.value.trim().toLowerCase() === y?.[3]?.toLowerCase()
     ) && re.set(f.entityId, !0);
-  }), o?.lineItems.physicalItems.forEach((f) => {
+  }), s?.lineItems.physicalItems.forEach((f) => {
     re.get(f.productEntityId) && je.set(f.entityId, f);
   }), n && n?.category_mapping.length > 0) {
     const f = _.map((l) => {
@@ -667,7 +667,7 @@ const Pt = {
         );
         E = A.fflMapping ? A : null;
       }
-      return l.customFields.some((A) => A.name.trim().toLowerCase() === I && A.value.trim().toLowerCase() === "no") ? null : (E && (re.set(l.entityId, !0), je.set(l.entityId, l)), { ...l, fflFirearmType: E ? E.fflMapping : null });
+      return l.customFields.some((A) => A.name.trim().toLowerCase() === L && A.value.trim().toLowerCase() === "no") ? null : (E && (re.set(l.entityId, !0), je.set(l.entityId, l)), { ...l, fflFirearmType: E ? E.fflMapping : null });
     }).filter((l) => l !== null);
     r = r || f.some((l) => l.fflFirearmType), a = a || f.some(
       (l) => l.fflFirearmType && l.fflFirearmType.trim().toLowerCase() === y?.[3]?.toLowerCase()
@@ -693,9 +693,9 @@ const Pt = {
 }), Ze = async () => {
   const n = `mapping-${x().storefrontApiToken}`;
   window.masterFFLCache = window.masterFFLCache || {};
-  const o = window.masterFFLCache[n];
-  if (o)
-    return o;
+  const s = window.masterFFLCache[n];
+  if (s)
+    return s;
   const a = await (await fetch(`${x().appUrl}/api/internal/mappingdata`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -707,15 +707,15 @@ const Pt = {
 }, Nt = async () => {
   const n = `checkout-settings-${x().storefrontApiToken}`;
   window.masterFFLCache = window.masterFFLCache || {};
-  const o = window.masterFFLCache[n];
-  if (o)
-    return o;
+  const s = window.masterFFLCache[n];
+  if (s)
+    return s;
   const a = await (await fetch(`/api/storefront/checkout-settings?checkoutId=${x().checkoutId}`, {
     method: "GET",
     headers: { "Content-Type": "application/json", "x-api-internal": "This API endpoint is for internal use only and may change in the future" }
   })).json();
   return window.masterFFLCache[n] = a, a;
-}, qt = async (n, o) => {
+}, qt = async (n, s) => {
   tt(n, "selectedDealer");
   let r = (await Qe())?.lineItems.physicalItems.map((y) => ({
     itemId: y.entityId,
@@ -724,19 +724,19 @@ const Pt = {
   }));
   const a = x().hasMultiShippingEnabled, p = x().nonFFLItemStrategy;
   a && (p === "FORCE_TO_FFL" || (p === "FORCE_TO_NON_FFL" || p === "ALLOW_CHOICE") && (r = r.filter((y) => re.get(Number(y.productId)))));
-  const I = {
+  const L = {
     address: {
-      firstName: o.name,
+      firstName: s.name,
       lastName: "n/a",
-      phone: o.contact.primaryPhone ? o.contact.primaryPhone : "0000000000",
-      company: o.name,
-      address1: o.contact.address.street1,
+      phone: s.contact.primaryPhone ? s.contact.primaryPhone : "0000000000",
+      company: s.name,
+      address1: s.contact.address.street1,
       address2: "",
-      city: o.contact.address.city,
-      stateOrProvinceCode: o.contact.address.state,
+      city: s.contact.address.city,
+      stateOrProvinceCode: s.contact.address.state,
       stateOrProvince: "",
       shouldSaveAddress: !1,
-      postalCode: o.contact.address.zip,
+      postalCode: s.contact.address.zip,
       localizedCountry: "United States",
       countryCode: "US",
       customFields: []
@@ -747,7 +747,7 @@ const Pt = {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      dealerId: o.id.match(/\d+/g)?.join("") || "",
+      dealerId: s.id.match(/\d+/g)?.join("") || "",
       cartId: n ?? "",
       storeHash: x().storeHash ?? ""
     })
@@ -758,18 +758,18 @@ const Pt = {
     {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify([{ address: I.address, lineItems: I.lineItems }])
+      body: JSON.stringify([{ address: L.address, lineItems: L.lineItems }])
     }
-  ), et(n, { selectedDealer: JSON.stringify(o) }), x().hasMultiShippingEnabled && window.location.reload(), {
-    dealer: o,
-    shippingData: I
+  ), et(n, { selectedDealer: JSON.stringify(s) }), x().hasMultiShippingEnabled && window.location.reload(), {
+    dealer: s,
+    shippingData: L
   };
 }, Qe = async () => {
   const n = `cart-${x().storefrontApiToken}`;
   window.masterFFLCache = window.masterFFLCache || {};
-  const o = window.masterFFLCache[n];
-  if (o)
-    return o;
+  const s = window.masterFFLCache[n];
+  if (s)
+    return s;
   const r = await (await fetch("/graphql", {
     method: "POST",
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${x().storefrontApiToken}` },
@@ -839,17 +839,17 @@ const Pt = {
   postalCode: sessionStorage.getItem(`${n}-postalCode`),
   acceptTerms: sessionStorage.getItem(`${n}-acceptTerms`) === "true" ? !0 : sessionStorage.getItem(`${n}-acceptTerms`) === "false" ? !1 : void 0,
   selectedDealer: sessionStorage.getItem(`${n}-selectedDealer`)
-}), et = (n, o) => {
-  const { postalCode: d, acceptTerms: r, selectedDealer: a } = o;
+}), et = (n, s) => {
+  const { postalCode: d, acceptTerms: r, selectedDealer: a } = s;
   sessionStorage.setItem(`${n}-postalCode`, d || sessionStorage.getItem(`${n}-postalCode`) || ""), sessionStorage.setItem(`${n}-acceptTerms`, r || sessionStorage.getItem(`${n}-acceptTerms`) || ""), sessionStorage.setItem(`${n}-selectedDealer`, a || sessionStorage.getItem(`${n}-selectedDealer`) || "");
-}, tt = (n, o) => {
-  sessionStorage.removeItem(`${n}-${o}`);
+}, tt = (n, s) => {
+  sessionStorage.removeItem(`${n}-${s}`);
 }, Vt = async () => {
   try {
     const n = x().checkoutId;
     if (!n) return null;
-    const o = await rt();
-    if (!o) {
+    const s = await rt();
+    if (!s) {
       if (x().hasMultiShippingEnabled) {
         const r = we(n).selectedDealer;
         if (r && r !== "null")
@@ -857,7 +857,7 @@ const Pt = {
       }
       return null;
     }
-    const d = o?.consignments || o?.data?.consignments || [];
+    const d = s?.consignments || s?.data?.consignments || [];
     if (d.length === 0) {
       if (x().hasMultiShippingEnabled) {
         const r = we(n).selectedDealer;
@@ -867,8 +867,8 @@ const Pt = {
       return null;
     }
     for (let r = 0; r < d.length; r++)
-      if ((d[r]?.lineItems?.physicalItems || []).some((L) => {
-        const h = L.productEntityId || L.productId;
+      if ((d[r]?.lineItems?.physicalItems || []).some((I) => {
+        const h = I.productEntityId || I.productId;
         return re.get(Number(h));
       }))
         return r;
@@ -880,14 +880,19 @@ const Pt = {
     return null;
   } catch (n) {
     console.error("Error getting FFL consignment index:", n);
-    const o = x().checkoutId;
-    if (o && x().hasMultiShippingEnabled) {
-      const d = we(o).selectedDealer;
+    const s = x().checkoutId;
+    if (s && x().hasMultiShippingEnabled) {
+      const d = we(s).selectedDealer;
       if (d && d !== "null")
         return 0;
     }
     return null;
   }
+}, Wt = async (n, s) => {
+  await fetch(`/api/storefront/checkouts/${n}/consignments/${s}`, {
+    method: "DELETE",
+    headers: { "Content-Type": "application/json" }
+  });
 }, rt = async () => await (await fetch(
   `/api/storefront/checkouts/${x().checkoutId}?include=consignments.lineItems.physicalItems%2Cconsignments.address`,
   {
@@ -901,6 +906,7 @@ const Pt = {
   setSession: et,
   removeSession: tt,
   saveDealer: qt,
+  removeConsignment: Wt,
   getMappingData: Ze,
   getProducts: Ut,
   getCheckout: rt,
@@ -910,23 +916,23 @@ const Pt = {
   checkoutService: null
 };
 var nt = /* @__PURE__ */ ((n) => (n.Billing = "billing", n.Customer = "customer", n.Payment = "payment", n.Shipping = "shipping", n))(nt || {});
-function st(n, o) {
+function st(n, s) {
   const d = n.tagName;
   if (d === "INPUT") {
     const r = n;
     if (r.type === "checkbox" || r.type === "radio") {
-      const a = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "checked")?.set, p = o === "true" || o === "on" || o === "1";
+      const a = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "checked")?.set, p = s === "true" || s === "on" || s === "1";
       a ? a.call(r, p) : r.checked = p;
     } else {
       const a = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set;
-      a ? a.call(r, o) : r.value = o;
+      a ? a.call(r, s) : r.value = s;
     }
   } else if (d === "TEXTAREA") {
     const r = n, a = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, "value")?.set;
-    a ? a.call(r, o) : r.value = o;
+    a ? a.call(r, s) : r.value = s;
   } else if (d === "SELECT") {
     const r = n, a = Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, "value")?.set;
-    a ? a.call(r, o) : r.value = o;
+    a ? a.call(r, s) : r.value = s;
   }
   n.dispatchEvent(new Event("input", { bubbles: !0 })), n.dispatchEvent(new Event("change", { bubbles: !0 }));
 }
@@ -935,8 +941,8 @@ const ot = jt({}), Oe = () => {
   if (!n)
     throw new Error("useMasterFFL must be used within a MasterFFLProvider");
   return n;
-}, Jt = ({ checkoutContext: n, getCheckoutStepStatuses: o }) => {
-  const { checkoutService: d, checkoutState: r } = Xe(n), a = pe(() => r.data.getConfig()?.storeProfile, [r]), p = pe(() => r.data.getCheckout()?.id, [r]), I = pe(() => a?.storeHash, [a]), [L, h] = ie(!1), [y, C] = ie({
+}, Kt = ({ checkoutContext: n, getCheckoutStepStatuses: s }) => {
+  const { checkoutService: d, checkoutState: r } = Xe(n), a = pe(() => r.data.getConfig()?.storeProfile, [r]), p = pe(() => r.data.getCheckout()?.id, [r]), L = pe(() => a?.storeHash, [a]), [I, h] = ie(!1), [y, C] = ie({
     postalCode: "",
     acceptTerms: !1
   }), [_, f] = ie(null), [l, E] = ie(null), [W, A] = ie(!1), [S, T] = ie(!1);
@@ -948,10 +954,10 @@ const ot = jt({}), Oe = () => {
   const Y = pe(
     () => ({
       ...M.getConfig(),
-      storeHash: I,
+      storeHash: L,
       checkoutId: r.data.getCheckout()?.id
     }),
-    [I, r]
+    [L, r]
   ), K = he(
     async (w) => {
       E(null), f(null);
@@ -962,7 +968,7 @@ const ot = jt({}), Oe = () => {
       }
     },
     [p, d]
-  ), ne = pe(() => o(r), [r]);
+  ), ne = pe(() => s(r), [r]);
   J(() => {
     if (ne.find((b) => b.isActive)?.type !== nt.Shipping && (!l || !y.acceptTerms)) {
       const b = document.querySelector('.checkout-step--shipping [data-test="step-edit-button"]');
@@ -987,7 +993,7 @@ const ot = jt({}), Oe = () => {
       checkoutService: d,
       checkoutState: r,
       config: Y,
-      isModalOpen: L,
+      isModalOpen: I,
       setIsModalOpen: h,
       values: y,
       setValues: C,
@@ -1002,7 +1008,7 @@ const ot = jt({}), Oe = () => {
       d,
       r,
       Y,
-      L,
+      I,
       h,
       y,
       C,
@@ -1015,15 +1021,15 @@ const ot = jt({}), Oe = () => {
     ]
   );
   return /* @__PURE__ */ c.jsx(ot.Provider, { value: u, children: (W || S) && /* @__PURE__ */ c.jsxs(c.Fragment, { children: [
-    /* @__PURE__ */ c.jsx(Wt, {}),
     /* @__PURE__ */ c.jsx(Yt, {}),
-    /* @__PURE__ */ c.jsx(Ht, {})
+    /* @__PURE__ */ c.jsx(Ht, {}),
+    /* @__PURE__ */ c.jsx(Bt, {})
   ] }) });
-}, Wt = () => {
-  const { setIsModalOpen: n, values: o, setValues: d, selectedDealer: r, config: a, error: p, isFFL: I, isSuppressor: L } = Oe(), [h, y] = ie({ postalCode: "", acceptTerms: "" }), C = te(null), _ = te(null), f = te(null), l = te(null), E = te(null), W = te(!1), A = te(!1), S = te(!1);
+}, Yt = () => {
+  const { setIsModalOpen: n, values: s, setValues: d, selectedDealer: r, config: a, error: p, isFFL: L, isSuppressor: I } = Oe(), [h, y] = ie({ postalCode: "", acceptTerms: "" }), C = te(null), _ = te(null), f = te(null), l = te(null), E = te(null), W = te(!1), A = te(!1), S = te(!1);
   J(() => {
-    W.current = o.acceptTerms;
-  }, [o.acceptTerms]), J(() => {
+    W.current = s.acceptTerms;
+  }, [s.acceptTerms]), J(() => {
     A.current = !!r;
   }, [r]);
   const T = he(() => {
@@ -1061,7 +1067,7 @@ const ot = jt({}), Oe = () => {
     };
   }, [Y]), J(() => {
     Y();
-  }, [Y, o.acceptTerms, r]);
+  }, [Y, s.acceptTerms, r]);
   const K = he(async () => {
     if (!S.current) {
       S.current = !0;
@@ -1152,7 +1158,7 @@ const ot = jt({}), Oe = () => {
     }
   }, [a.checkoutId, r]);
   J(() => {
-    if (!I && !L) return;
+    if (!L && !I) return;
     if (a.hasMultiShippingEnabled)
       if (a.nonFFLItemStrategy !== "FORCE_TO_FFL") {
         const b = document.querySelector('[data-test="shipping-mode-toggle"]');
@@ -1177,7 +1183,7 @@ const ot = jt({}), Oe = () => {
     }), () => {
       clearTimeout(u), E.current && (clearTimeout(E.current), E.current = null), l.current && (l.current.disconnect(), l.current = null);
     };
-  }, [I, L, a.hasMultiShippingEnabled, K]), J(() => {
+  }, [L, I, a.hasMultiShippingEnabled, K]), J(() => {
     if (!r) return;
     document.querySelectorAll(".consignment-container--ffl").forEach((b) => {
       b.classList.remove("consignment-container--ffl");
@@ -1188,9 +1194,9 @@ const ot = jt({}), Oe = () => {
     return () => clearTimeout(w);
   }, [r, K]);
   const ne = (u) => {
-    y({ postalCode: "", acceptTerms: "" }), u.target.name === "postalCode" ? (d({ ...o, postalCode: u.target.value }), sessionStorage.setItem(`${a.checkoutId}-postalCode`, u.target.value)) : (d({ ...o, acceptTerms: u.target.checked }), sessionStorage.setItem(`${a.checkoutId}-acceptTerms`, u.target.checked.toString()));
+    y({ postalCode: "", acceptTerms: "" }), u.target.name === "postalCode" ? (d({ ...s, postalCode: u.target.value }), sessionStorage.setItem(`${a.checkoutId}-postalCode`, u.target.value)) : (d({ ...s, acceptTerms: u.target.checked }), sessionStorage.setItem(`${a.checkoutId}-acceptTerms`, u.target.checked.toString()));
   }, se = (u) => {
-    if (u.preventDefault(), y({ postalCode: "", acceptTerms: "" }), !o.postalCode) {
+    if (u.preventDefault(), y({ postalCode: "", acceptTerms: "" }), !s.postalCode) {
       y({ ...h, postalCode: `${a.lang.postalCodeLabel} is required` });
       return;
     }
@@ -1238,7 +1244,7 @@ const ot = jt({}), Oe = () => {
                     onKeyDown: ce,
                     placeholder: "",
                     type: "text",
-                    value: o.postalCode
+                    value: s.postalCode
                   }
                 ),
                 /* @__PURE__ */ c.jsx("div", { style: { flexShrink: 0 }, children: /* @__PURE__ */ c.jsx("button", { onClick: se, style: { margin: 0 }, className: "button button--primary optimizedCheckout-buttonPrimary", children: a.lang.buttonText }) })
@@ -1251,7 +1257,7 @@ const ot = jt({}), Oe = () => {
           /* @__PURE__ */ c.jsx(
             "input",
             {
-              checked: o.acceptTerms,
+              checked: s.acceptTerms,
               className: "form-checkbox optimizedCheckout-form-checkbox",
               id: "accept-agreement",
               name: "acceptTerms",
@@ -1307,7 +1313,7 @@ const ot = jt({}), Oe = () => {
       ]
     }
   );
-}, Yt = () => {
+}, Ht = () => {
   const { config: n } = Oe();
   return J(() => {
     if (document.querySelector(`script[src^="${n.sdkUrl}"]`))
@@ -1315,8 +1321,8 @@ const ot = jt({}), Oe = () => {
     const d = document.createElement("script");
     d.src = n.sdkUrl, document.body.appendChild(d);
   }, [n.sdkUrl]), null;
-}, Ht = () => {
-  const { isModalOpen: n, setIsModalOpen: o, config: d, values: r, setSelectedDealer: a, isSuppressor: p } = Oe(), I = "ffSelectFrame", L = async (y) => {
+}, Bt = () => {
+  const { isModalOpen: n, setIsModalOpen: s, config: d, values: r, setSelectedDealer: a, isSuppressor: p } = Oe(), L = "ffSelectFrame", I = async (y) => {
     if (!y) return;
     const { shippingData: C, dealer: _ } = await M.saveDealer(d.checkoutId, y), f = C.address;
     Object.keys(f).forEach((l) => {
@@ -1325,19 +1331,19 @@ const ot = jt({}), Oe = () => {
         const W = String(f[l] ?? "");
         st(E, W);
       }
-    }), a(_), o(!1);
+    }), a(_), s(!1);
   };
   if (J(() => {
     n && setTimeout(() => {
       new window.FFLSelectSDK.FFLDealerSelector(
         r.postalCode,
-        I,
+        L,
         { url: d.baseUrl },
         {
           storeDomain: d.storeDomain,
           envMode: d.env,
           filters: p ? "exclude_non_sot_dealer=true" : "",
-          dealerSelectionCallback: L
+          dealerSelectionCallback: I
         }
       ).show();
     }, 200);
@@ -1347,7 +1353,7 @@ const ot = jt({}), Oe = () => {
     d.baseUrl,
     d.storeDomain,
     d.env,
-    L,
+    I,
     p
   ]), !n)
     return null;
@@ -1375,7 +1381,7 @@ const ot = jt({}), Oe = () => {
           justifyContent: "center",
           zIndex: 1e3
         },
-        onClick: () => o(!1),
+        onClick: () => s(!1),
         children: /* @__PURE__ */ c.jsx(
           "div",
           {
@@ -1389,7 +1395,7 @@ const ot = jt({}), Oe = () => {
               position: "relative"
             },
             onClick: (y) => y.stopPropagation(),
-            children: /* @__PURE__ */ c.jsx("div", { id: I, className: "ffl-modal-body", style: { height: "100%", flex: 1 } })
+            children: /* @__PURE__ */ c.jsx("div", { id: L, className: "ffl-modal-body", style: { height: "100%", flex: 1 } })
           }
         )
       }
@@ -1398,7 +1404,7 @@ const ot = jt({}), Oe = () => {
   return Ot(h, document.body);
 };
 export {
-  Jt as MasterFFL,
+  Kt as MasterFFL,
   Oe as useMasterFFL
 };
 //# sourceMappingURL=bigc-masterffl-sdk.checkout.es.js.map
