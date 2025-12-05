@@ -1,3 +1,7 @@
+## <small>1.1.6 (2025-12-05)</small>
+
+* fix: adjusting the consignment logic for logged in customers ([c667364](https://github.com/MoJoActive/bigc-masterffl-checkout-sdk/commit/c667364))
+
 ## <small>1.1.5 (2025-12-03)</small>
 
 * fix: correcting the ffl product set based on category mappings ([f21b7a1](https://github.com/MoJoActive/bigc-masterffl-checkout-sdk/commit/f21b7a1))
