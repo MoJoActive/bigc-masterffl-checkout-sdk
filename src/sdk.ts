@@ -30,10 +30,13 @@ const init = async () => {
     return product.customFields.some((field: any) => field.name.trim().toLowerCase() === ffAttr && field.value.trim().toLowerCase() === ffValue);
   });
   isSuppressor = products.some((product: any) => {
-    return product.customFields.some(
-      (field: any) => field.name.trim().toLowerCase() === fflFirearmAttr && field.value.trim().toLowerCase() === fflFirearmValue?.[3]?.toLowerCase()
+    const isNFA =  product.customFields.some(
+      (field: any) => field.name.trim().toLowerCase() === fflFirearmAttr && field.value.trim().toLowerCase() === fflFirearmValue?.[3]?.toLowerCase() 
     );
+    const isRequiredNo = product.customFields.some((field: any) => field.name.trim().toLowerCase() === ffAttr && field.value.trim().toLowerCase() === "no");
+    return isNFA && !isRequiredNo;
   });
+
 
   // save the product to the maps
   products.forEach((product: any) => {
@@ -80,7 +83,8 @@ const init = async () => {
 
         // if the product has a custom field that is "no", return null
         if (product.customFields.some((field: any) => field.name.trim().toLowerCase() === ffAttr && field.value.trim().toLowerCase() === "no")) {
-          return null;
+          lowestPriority = null
+          return null
         }
 
         if (lowestPriority) {
@@ -99,6 +103,7 @@ const init = async () => {
         (product: any) => product.fflFirearmType && product.fflFirearmType.trim().toLowerCase() === fflFirearmValue?.[3]?.toLowerCase()
       );
   }
+
 
   isEntirelyFFL = products.length === fflProducts.size;
 
