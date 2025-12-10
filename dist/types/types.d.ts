@@ -79,6 +79,10 @@ export interface MasterFFLContextType {
     error: string | null;
     isFFL: boolean;
     isSuppressor: boolean;
+    isEntirelyFFL: boolean;
+    checkout: any;
+    setCheckout: (checkout: any) => void;
+    fixInvalidConsignments: (checkout: any) => Promise<void>;
     mappingData?: {
         category_mapping: any[];
         ffl_custom_attribute_name: any;

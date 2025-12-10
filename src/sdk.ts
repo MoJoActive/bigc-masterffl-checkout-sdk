@@ -45,7 +45,8 @@ const init = async () => {
     }
     if (
       product.customFields.some(
-        (field: any) => field.name.trim().toLowerCase() === fflFirearmAttr && field.value.trim().toLowerCase() === fflFirearmValue?.[3]?.toLowerCase()
+        (field: any) => field.name.trim().toLowerCase() === fflFirearmAttr && field.value.trim().toLowerCase() === fflFirearmValue?.[3]?.toLowerCase() &&
+        !product.customFields.some((field: any) => field.name.trim().toLowerCase() === ffAttr && field.value.trim().toLowerCase() === "no")
       )
     ) {
       fflProducts.set(product.entityId, true);
