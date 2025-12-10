@@ -1,3 +1,7 @@
+## <small>1.1.7 (2025-12-10)</small>
+
+* fix: enhance FFL consignment handling for NFA items and updated checkout for feature parity ([18bde34](https://github.com/MoJoActive/bigc-masterffl-checkout-sdk/commit/18bde34))
+
 ## <small>1.1.6 (2025-12-05)</small>
 
 * fix: adjusting the consignment logic for logged in customers ([c667364](https://github.com/MoJoActive/bigc-masterffl-checkout-sdk/commit/c667364))
