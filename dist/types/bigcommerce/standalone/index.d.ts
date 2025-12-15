@@ -20,5 +20,5 @@ export interface MasterFFLContextType {
     setCheckout: (checkout: any) => void;
     fixInvalidConsignments: (checkout: any) => Promise<void>;
 }
-export declare const renderMasterFFL: () => void;
+export declare const renderMasterFFL: () => Promise<void>;
 //# sourceMappingURL=index.d.ts.map

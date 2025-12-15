@@ -65,7 +65,17 @@ const useMasterFFL = () => {
   return context;
 };
 
-const MasterFFLProvider = ({ children }: { children: React.ReactNode }) => {
+const MasterFFLProvider = ({
+  children,
+  isFFL,
+  isSuppressor,
+  isEntirelyFFL,
+}: {
+  children: React.ReactNode;
+  isFFL: boolean;
+  isSuppressor: boolean;
+  isEntirelyFFL: boolean;
+}) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [values, setValues] = useState({
     postalCode: "",
@@ -73,9 +83,6 @@ const MasterFFLProvider = ({ children }: { children: React.ReactNode }) => {
   });
   const [selectedDealer, setSelectedDealer] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
-  const [isFFL, setIsFFL] = useState(false);
-  const [isSuppressor, setIsSuppressor] = useState(false);
-  const [isEntirelyFFL, setIsEntirelyFFL] = useState(false);
   const [checkout, setCheckout] = useState<any>(null);
 
   const handleInit = async () => {
@@ -87,12 +94,6 @@ const MasterFFLProvider = ({ children }: { children: React.ReactNode }) => {
 
     const checkout = await SDK.getCheckout();
     setCheckout(checkout);
-
-    const { isFFL, isSuppressor, isEntirelyFFL } = await SDK.init();
-
-    setIsFFL(isFFL);
-    setIsSuppressor(isSuppressor);
-    setIsEntirelyFFL(isEntirelyFFL);
 
     if (selectedDealer) {
       if (checkout?.consignments?.length === 0) {
@@ -206,9 +207,9 @@ const MasterFFLProvider = ({ children }: { children: React.ReactNode }) => {
   return <MasterFFLContext.Provider value={providerValues}>{children}</MasterFFLContext.Provider>;
 };
 
-const MasterFFL = () => {
+const MasterFFL = ({ isFFL, isSuppressor, isEntirelyFFL }: { isFFL: boolean; isSuppressor: boolean; isEntirelyFFL: boolean }) => {
   return (
-    <MasterFFLProvider>
+    <MasterFFLProvider isFFL={isFFL} isSuppressor={isSuppressor} isEntirelyFFL={isEntirelyFFL}>
       <MasterFFLForm />
       <MasterFFlScript />
       <MasterFFLModal />
@@ -889,10 +890,12 @@ const MasterFFLForm = () => {
   );
 };
 
-export const renderMasterFFL = () => {
+export const renderMasterFFL = async () => {
   (window as any).__masterfflScriptManager = (window as any).__masterfflScriptManager || {};
   if ((window as any).__masterfflScriptManager.initialized) return;
   (window as any).__masterfflScriptManager.initialized = true;
+
+  const { isFFL, isSuppressor, isEntirelyFFL } = await SDK.init();
 
   const returnToShipping = () => {
     const selectedDealer = SDK.getSession(SDK.getConfig().checkoutId).selectedDealer;
@@ -914,6 +917,8 @@ export const renderMasterFFL = () => {
     }
   };
 
+  returnToShipping();
+
   const mountIfReady = () => {
     const destination = document.querySelector(DESTINATION_ELEMENT);
     if (!destination) return false;
@@ -933,7 +938,7 @@ export const renderMasterFFL = () => {
     if (!(app as any)._root) {
       const root = createRoot(app);
       (app as any)._root = root;
-      root.render(<MasterFFL />);
+      root.render(<MasterFFL isFFL={isFFL} isSuppressor={isSuppressor} isEntirelyFFL={isEntirelyFFL} />);
     }
     return true;
   };
