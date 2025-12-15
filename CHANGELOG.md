@@ -1,3 +1,7 @@
+## <small>1.1.9 (2025-12-15)</small>
+
+* fix: adjusting the timing of the SDK init to fix non-dealer addresses in certain circumstances of lo ([93eeb2f](https://github.com/MoJoActive/bigc-masterffl-checkout-sdk/commit/93eeb2f))
+
 ## <small>1.1.8 (2025-12-10)</small>
 
 * fix: updates around consignments for the FFL Required = No ([ff0d989](https://github.com/MoJoActive/bigc-masterffl-checkout-sdk/commit/ff0d989))
