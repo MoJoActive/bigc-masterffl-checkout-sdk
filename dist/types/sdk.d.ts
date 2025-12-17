@@ -27,7 +27,7 @@ export declare const SDK: {
     };
     getSession: (checkoutId: string | undefined) => {
         postalCode: string | null;
-        acceptTerms: boolean | undefined;
+        acceptTerms: boolean;
         selectedDealer: string | null;
     };
     setSession: (checkoutId: string | undefined, options: {

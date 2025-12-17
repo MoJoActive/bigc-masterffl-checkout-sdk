@@ -378,7 +378,7 @@ const getSession = (checkoutId: string | undefined) => {
         ? true
         : sessionStorage.getItem(`${checkoutId}-acceptTerms`) === "false"
         ? false
-        : undefined,
+        : true, // default to true if not set
     selectedDealer: sessionStorage.getItem(`${checkoutId}-selectedDealer`),
   };
 };

@@ -840,7 +840,8 @@ const Pt = {
   categoryIds: a.node.categories.edges.map((u) => u.node)
 })) : [], Se = (n) => ({
   postalCode: sessionStorage.getItem(`${n}-postalCode`),
-  acceptTerms: sessionStorage.getItem(`${n}-acceptTerms`) === "true" ? !0 : sessionStorage.getItem(`${n}-acceptTerms`) === "false" ? !1 : void 0,
+  acceptTerms: sessionStorage.getItem(`${n}-acceptTerms`) === "true" ? !0 : sessionStorage.getItem(`${n}-acceptTerms`) !== "false",
+  // default to true if not set
   selectedDealer: sessionStorage.getItem(`${n}-selectedDealer`)
 }), tt = (n, s) => {
   const { postalCode: f, acceptTerms: r, selectedDealer: a } = s;

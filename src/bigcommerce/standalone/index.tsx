@@ -79,7 +79,7 @@ const MasterFFLProvider = ({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [values, setValues] = useState({
     postalCode: "",
-    acceptTerms: false,
+    acceptTerms: true,
   });
   const [selectedDealer, setSelectedDealer] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
@@ -89,7 +89,7 @@ const MasterFFLProvider = ({
     const { postalCode, acceptTerms, selectedDealer } = SDK.getSession(SDK.getConfig().checkoutId);
 
     if (postalCode) setValues((p) => ({ ...p, postalCode: postalCode }));
-    if (acceptTerms) setValues((p) => ({ ...p, acceptTerms: acceptTerms }));
+    if (acceptTerms) setValues((p) => ({ ...p, acceptTerms: acceptTerms ?? true }));
     if (selectedDealer && selectedDealer !== "null") setSelectedDealer(JSON.parse(selectedDealer));
 
     const checkout = await SDK.getCheckout();
@@ -112,6 +112,11 @@ const MasterFFLProvider = ({
     try {
       if (!checkout) return;
 
+      const hasDuplicateConsignments = checkout.consignments.filter(
+        (consignment: any) =>
+          checkout.consignments.filter((c: any) => c.address1 === consignment.address1 && c.postalCode === consignment.postalCode).length > 1
+      );
+
       const consignments = checkout.consignments || [];
       if (consignments.length === 0) {
         return;
@@ -121,7 +126,7 @@ const MasterFFLProvider = ({
         const lineItemIds = consignment.lineItemIds || [];
 
         if (lineItemIds.length === 0) {
-          return;
+          continue;
         }
 
         // if any of the items are FFL/NFA and are not attached to the dealer delete the consignment
@@ -130,13 +135,35 @@ const MasterFFLProvider = ({
           return SDK.fflProducts.get(item.productId);
         });
 
+        const hasNonFFLItems = lineItemIds.some((itemId: number) => {
+          const item = checkout.cart.lineItems.physicalItems.find((item: any) => item.id === itemId);
+          return !SDK.fflProducts.get(item.productId);
+        });
+
         const dealer = JSON.parse(SDK.getSession(SDK.getConfig().checkoutId)?.selectedDealer || "{}");
 
         const isFFLConsignment =
           consignment.shippingAddress.address1 === dealer?.contact?.address?.street1 &&
           consignment.shippingAddress.postalCode === dealer?.contact?.address?.zip;
 
+        // if the consignment is FFL and contains FFL and there's duplicate consignment
+        //  (automatically created by the system) remove the duplicate consignment
+        if (hasFFLItems && isFFLConsignment && hasDuplicateConsignments.length > 0) {
+          for (const duplicateConsignment of checkout.consignments.filter((c: any) => c.id !== consignment.id)) {
+            await SDK.removeConsignment(SDK.getConfig().checkoutId, duplicateConsignment.id);
+          }
+          return window.location.reload();
+        }
+
+        // if the consignment is not FFL and contains FFL, remove the consignment and save the dealer
         if (hasFFLItems && !isFFLConsignment) {
+          await SDK.removeConsignment(SDK.getConfig().checkoutId, consignment.id);
+          await SDK.saveDealer(SDK.getConfig().checkoutId, dealer);
+        }
+
+        // if the consignment is FFL and the non-FFL item strategy is FORCE_TO_NON_FFL and the 
+        // consignment contains non-FFL items, remove the consignment and save the dealer
+        if (isFFLConsignment && SDK.getConfig().nonFFLItemStrategy === 'FORCE_TO_NON_FFL' && hasNonFFLItems) {
           await SDK.removeConsignment(SDK.getConfig().checkoutId, consignment.id);
           await SDK.saveDealer(SDK.getConfig().checkoutId, dealer);
         }
@@ -501,39 +528,17 @@ const MasterFFLForm = () => {
       }
 
       // If we still don't have a match, try matching by product IDs (check if consignment has FFL products)
-      if (!fflConsignment) {
-        // Get the mapping to check FFL attributes
-        const mapping = await SDK.getMappingData();
-        const ffAttr = mapping?.ffl_custom_attribute_name?.trim().toLowerCase();
-        const ffValue = mapping?.ffl_custom_attribute_value?.trim().toLowerCase();
-        const fflFirearmAttr = mapping?.ffl_firearm_custom_attribute_name?.trim().toLowerCase();
-        const fflFirearmValue = mapping?.ffl_firearm_custom_attribute_value;
+      for (const consignment of consignments) {
+        const lineItems = consignment?.lineItemIds || [];
+        if (lineItems.length === 0) continue;
 
-        for (const consignment of consignments) {
-          const lineItems = consignment?.lineItems?.physicalItems || [];
-          if (lineItems.length === 0) continue;
+        // Check if any product in this consignment is an FFL product
+        const hasFFLItems = lineItems.some((itemId: any) => SDK.fflLineItems.has(itemId));
 
-          // Get product IDs from this consignment
-          const consignmentProductIds = lineItems.map((item: any) => item.productEntityId || item.productId);
-          const consignmentProducts = await SDK.getProducts(consignmentProductIds);
-
-          // Check if any product in this consignment is an FFL product
-          const hasFFLItems = consignmentProducts.some((product: any) => {
-            const isFFL = product.customFields?.some(
-              (field: any) => field.name.trim().toLowerCase() === ffAttr && field.value.trim().toLowerCase() === ffValue
-            );
-            const isSuppressor = product.customFields?.some(
-              (field: any) =>
-                field.name.trim().toLowerCase() === fflFirearmAttr && field.value.trim().toLowerCase() === fflFirearmValue?.[3]?.toLowerCase()
-            );
-            return isFFL || isSuppressor;
-          });
-
-          if (hasFFLItems) {
-            fflConsignment = consignment;
-            fflConsignmentId = consignment.id;
-            break;
-          }
+        if (hasFFLItems) {
+          fflConsignment = consignment;
+          fflConsignmentId = consignment.id;
+          break;
         }
       }
 
@@ -601,7 +606,7 @@ const MasterFFLForm = () => {
             container.setAttribute("data-index", String(i));
             isMarkingConsignmentRef.current = false;
             handleHideAddressToggle(container);
-            return;
+            continue;
           }
         }
       }
@@ -905,7 +910,16 @@ export const renderMasterFFL = async () => {
       return;
     }
 
-    if (!selectedDealer || !acceptTerms) {
+    const dealer = selectedDealer ? JSON.parse(selectedDealer) : null;
+    const isNfaAndNotNfaDealer = isSuppressor && !dealer?.isSotDealer;
+
+    // if the user has a NFA item and the dealer is not NFA, remove the selected dealer
+    // and take them back to the shipping step
+    if (isNfaAndNotNfaDealer) {
+      SDK.removeSession(SDK.getConfig().checkoutId, "selectedDealer");
+    }
+
+    if (!selectedDealer || !acceptTerms || isNfaAndNotNfaDealer) {
       const destination = document.querySelector(DESTINATION_ELEMENT);
       if (destination) return;
 
