@@ -1,3 +1,7 @@
+## <small>1.1.10 (2025-12-17)</small>
+
+* fix: default accept terms to true, adjusting FFL consignments for NFA items and non item strategies ([f2e803a](https://github.com/MoJoActive/bigc-masterffl-checkout-sdk/commit/f2e803a))
+
 ## <small>1.1.9 (2025-12-15)</small>
 
 * fix: adjusting the timing of the SDK init to fix non-dealer addresses in certain circumstances of lo ([93eeb2f](https://github.com/MoJoActive/bigc-masterffl-checkout-sdk/commit/93eeb2f))
