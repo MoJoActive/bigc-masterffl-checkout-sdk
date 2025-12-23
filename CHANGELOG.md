@@ -1,3 +1,7 @@
+## 1.2.0 (2025-12-23)
+
+* feat: improving the user experience for force to non-ffl strategy to reduce number of clicks needed. ([0ae3171](https://github.com/MoJoActive/bigc-masterffl-checkout-sdk/commit/0ae3171))
+
 ## <small>1.1.10 (2025-12-17)</small>
 
 * fix: default accept terms to true, adjusting FFL consignments for NFA items and non item strategies ([f2e803a](https://github.com/MoJoActive/bigc-masterffl-checkout-sdk/commit/f2e803a))
