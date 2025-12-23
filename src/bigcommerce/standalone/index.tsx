@@ -161,9 +161,9 @@ const MasterFFLProvider = ({
           await SDK.saveDealer(SDK.getConfig().checkoutId, dealer);
         }
 
-        // if the consignment is FFL and the non-FFL item strategy is FORCE_TO_NON_FFL and the 
+        // if the consignment is FFL and the non-FFL item strategy is FORCE_TO_NON_FFL and the
         // consignment contains non-FFL items, remove the consignment and save the dealer
-        if (isFFLConsignment && SDK.getConfig().nonFFLItemStrategy === 'FORCE_TO_NON_FFL' && hasNonFFLItems) {
+        if (isFFLConsignment && SDK.getConfig().nonFFLItemStrategy === "FORCE_TO_NON_FFL" && hasNonFFLItems) {
           await SDK.removeConsignment(SDK.getConfig().checkoutId, consignment.id);
           await SDK.saveDealer(SDK.getConfig().checkoutId, dealer);
         }
@@ -381,6 +381,7 @@ const MasterFFLForm = () => {
   const acceptTermsRef = useRef(false);
   const selectedDealerRef = useRef(false);
   const isMarkingConsignmentRef = useRef(false);
+  const documentClickListenerAddedRef = useRef(false);
 
   useEffect(() => {
     acceptTermsRef.current = values.acceptTerms;
@@ -618,6 +619,29 @@ const MasterFFLForm = () => {
   useEffect(() => {
     if (!isFFL && !isSuppressor) return;
 
+    const handleDocumentClick = (e: MouseEvent) => {
+      const target = e.target as HTMLLinkElement | HTMLButtonElement;
+      // when the new destination is saved, click the allocate items button, then click the allocate all items button,
+      if (target.id === "checkout-save-address") {
+        setTimeout(() => {
+          const allocateButton = document.querySelector('[data-test="allocate-items-button"]') as HTMLButtonElement;
+          if (allocateButton) {
+            allocateButton.click();
+            setTimeout(() => {
+              const allocateAllItemsButton = document.querySelector('[data-test="allocate-all-items-button"]') as HTMLButtonElement;
+              if (allocateAllItemsButton) {
+                allocateAllItemsButton.click();
+              }
+            }, 200);
+          }
+        }, 700);
+      }
+    };
+
+    // Reset the flag when effect runs
+    documentClickListenerAddedRef.current = false;
+    let documentClickTimeoutId: NodeJS.Timeout | null = null;
+
     // if split consignments is enabled, click the button to switch to multiple shipping modes
     if (SDK.getConfig().hasMultiShippingEnabled) {
       if (SDK.getConfig().nonFFLItemStrategy !== "FORCE_TO_FFL") {
@@ -640,6 +664,39 @@ const MasterFFLForm = () => {
           btnShipMode.style.display = "none";
         }
       }
+
+      documentClickTimeoutId = setTimeout(async () => {
+        if (SDK.getConfig().hasMultiShippingEnabled && SDK.getConfig().nonFFLItemStrategy === "FORCE_TO_NON_FFL") {
+          // preselect the first shipping option if no shipping option is selected
+          const consignments = document.querySelectorAll(".consignment-container");
+          for (const consignment of consignments) {
+            const selectedShippingOption = consignment.querySelector('input[type="radio"]:checked');
+            if (!selectedShippingOption) {
+              const firstShippingOption = consignment.querySelector('input[type="radio"]') as HTMLInputElement;
+              if (firstShippingOption) {
+                firstShippingOption.click();
+                await new Promise((resolve) => setTimeout(resolve, 1500));
+              }
+            }
+          }
+
+          // click the add new destination button when there's more items to consign
+          // look for a div with class .alertBox-column.alertBox-message that contains like "x item/items left to allocate"
+          const alertBoxMessage = document.querySelector(".alertBox-column.alertBox-message") as HTMLDivElement;
+          const hasOnlyOneConsignment = document.querySelectorAll(".consignment-container").length === 1;
+          if (alertBoxMessage && hasOnlyOneConsignment) {
+            const message = alertBoxMessage.textContent || "";
+            if (message.includes("left to allocate")) {
+              const addNewDestinationButton = document.querySelector("button.add-consignment-button") as HTMLButtonElement;
+              if (addNewDestinationButton) {
+                addNewDestinationButton.click();
+                document.addEventListener("click", handleDocumentClick);
+                documentClickListenerAddedRef.current = true;
+              }
+            }
+          }
+        }
+      }, 1000);
     }
 
     // Initial check with a small delay to ensure DOM is ready
@@ -666,6 +723,9 @@ const MasterFFLForm = () => {
 
     return () => {
       clearTimeout(timeoutId);
+      if (documentClickTimeoutId) {
+        clearTimeout(documentClickTimeoutId);
+      }
       if (mutationTimeoutRef.current) {
         clearTimeout(mutationTimeoutRef.current);
         mutationTimeoutRef.current = null;
@@ -674,8 +734,12 @@ const MasterFFLForm = () => {
         consignmentObserverRef.current.disconnect();
         consignmentObserverRef.current = null;
       }
+      if (documentClickListenerAddedRef.current) {
+        document.removeEventListener("click", handleDocumentClick);
+        documentClickListenerAddedRef.current = false;
+      }
     };
-  }, [isFFL, isSuppressor, SDK.getConfig().hasMultiShippingEnabled, markFFLConsignment]);
+  }, [isFFL, isSuppressor, SDK.getConfig().hasMultiShippingEnabled, markFFLConsignment, isEntirelyFFL]);
 
   // Reset and re-mark FFL consignment when dealer changes
   useEffect(() => {
@@ -865,6 +929,9 @@ const MasterFFLForm = () => {
             #checkoutShippingAddress, #sameAsBilling, #sameAsBilling + label { display: none; }
             .consignment-container--ffl [data-test="edit-shipping-address"] { display: none; }
             .consignment-container--ffl [data-test="delete-consignment-button"] { display: none; }
+            .new-consignment-line-item-header, .consignment-line-item-header, .guest-consignment-line-item-header { align-items: center !important; }
+            .new-consignment-line-item-header h3, .consignment-line-item-header h3, .guest-consignment-line-item-header h3{ margin-bottom: 0px !important; }
+            [data-test="enter-shipping-address"], [data-test="allocate-items-button"] { font-weight: bold !important; border: 1px solid; padding: 6px 10px; }
             ${
               SDK.getConfig().hasMultiShippingEnabled &&
               `           
