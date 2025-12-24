@@ -112,10 +112,19 @@ const MasterFFLProvider = ({
     try {
       if (!checkout) return;
 
-      const hasDuplicateConsignments = checkout.consignments.filter(
-        (consignment: any) =>
-          checkout.consignments.filter((c: any) => c.address1 === consignment.address1 && c.postalCode === consignment.postalCode).length > 1
-      );
+      // Find duplicate consignments by shipping address (address1 and postalCode)
+      const addressKey = (c: any) => `${c.shippingAddress?.address1 || ""}::${c.shippingAddress?.postalCode || ""}`;
+      const consignmentMap = new Map<string, any[]>();
+      for (const consignment of checkout.consignments || []) {
+        if (!consignment.shippingAddress) continue;
+        const key = addressKey(consignment);
+        if (!consignmentMap.has(key)) {
+          consignmentMap.set(key, []);
+        }
+        consignmentMap.get(key)!.push(consignment);
+      }
+      // Keep only arrays with more than one consignment (real duplicates)
+      const hasDuplicateConsignments = Array.from(consignmentMap.values()).filter((arr) => arr.length > 1).flat();
 
       const consignments = checkout.consignments || [];
       if (consignments.length === 0) {
