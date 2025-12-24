@@ -1,3 +1,7 @@
+## <small>1.2.1 (2025-12-24)</small>
+
+* fix: fix for detecting duplicate consignments causing an incorrect loop to occur. ([b4aa01f](https://github.com/MoJoActive/bigc-masterffl-checkout-sdk/commit/b4aa01f))
+
 ## 1.2.0 (2025-12-23)
 
 * feat: improving the user experience for force to non-ffl strategy to reduce number of clicks needed. ([0ae3171](https://github.com/MoJoActive/bigc-masterffl-checkout-sdk/commit/0ae3171))
