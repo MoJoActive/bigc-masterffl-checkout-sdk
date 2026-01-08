@@ -1,3 +1,7 @@
+## 1.3.0 (2026-01-08)
+
+* feat: updating custom checkout for feature parity with standalone ([6cd9385](https://github.com/MoJoActive/bigc-masterffl-checkout-sdk/commit/6cd9385))
+
 ## <small>1.2.1 (2025-12-24)</small>
 
 * fix: fix for detecting duplicate consignments causing an incorrect loop to occur. ([b4aa01f](https://github.com/MoJoActive/bigc-masterffl-checkout-sdk/commit/b4aa01f))
