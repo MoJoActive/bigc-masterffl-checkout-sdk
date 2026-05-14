@@ -1,0 +1,6 @@
+Font Awesome CDN Audit — 2026-05-14
+Result: NO Font Awesome usage found in this repository.
+- No CDN references (use.fontawesome.com, kit.fontawesome.com, fontawesome.com)
+- No npm packages (@fortawesome/*, font-awesome)
+- No icon class patterns (fa-*, .fa) in source or dist
+Action required: None
